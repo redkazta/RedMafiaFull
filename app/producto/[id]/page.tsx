@@ -11,11 +11,11 @@ import { supabase } from '@/lib/supabase';
 
 // Product interface matching actual Supabase data
 interface Product {
-  id: string;
+  id: number; // ✅ Corregido: debe ser number según Supabase
   name: string;
-  slug: string;
+  slug: string | null;
   description: string | null;
-  category_id: string | null;
+  category_id: number | null; // ✅ Corregido: debe ser number según Supabase
   artist_id: string | null;
   price_tokens: number;
   original_price_mxn: number | null;
@@ -23,10 +23,10 @@ interface Product {
   main_image_url: string | null;
   image_urls: string[] | null;
   status: string;
-  is_featured: boolean;
-  created_at: string;
-  updated_at: string;
-  product_categories: { id: string; name: string; } | null;
+  is_featured: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  product_categories: { id: number; name: string; } | null; // ✅ Corregido: id debe ser number
   // Add missing properties that we need
   price?: number;
   image_url?: string | null;
@@ -35,12 +35,19 @@ interface Product {
 
 export default function ProductPage() {
   const params = useParams();
-  const productId = params.id as string;
+  const productIdString = params.id as string;
+  const productId = parseInt(productIdString, 10); // ✅ Convertir string a number
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
 
   const loadProduct = useCallback(async () => {
+    if (isNaN(productId)) {
+      console.error('Invalid product ID');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -49,7 +56,7 @@ export default function ProductPage() {
           *,
           product_categories (id, name)
         `)
-        .eq('id', productId)
+        .eq('id', productId) // ✅ Ahora productId es number
         .eq('status', 'active')
         .single();
 
