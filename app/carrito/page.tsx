@@ -16,13 +16,13 @@ export default function CarritoPage() {
   const total = getCartTotal();
   const itemsCount = getCartItemsCount();
 
-  const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
+  const handleUpdateQuantity = async (productId: number, newQuantity: number) => {
     setLoading(true);
     await updateQuantity(productId, newQuantity);
     setLoading(false);
   };
 
-  const handleRemoveItem = async (productId: string) => {
+  const handleRemoveItem = async (productId: number) => {
     setLoading(true);
     await removeFromCart(productId);
     setLoading(false);

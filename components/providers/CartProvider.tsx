@@ -5,8 +5,8 @@ import { useAuth } from './AuthProvider';
 import { supabase } from '@/lib/supabase';
 
 export interface CartItem {
-  id: string;
-  product_id: string;
+  id: number; // ✅ Corregido: debe ser number según Supabase
+  product_id: number; // ✅ Corregido: debe ser number según Supabase
   name: string;
   price_tokens: number;
   quantity: number;
@@ -15,8 +15,8 @@ export interface CartItem {
 }
 
 export interface WishlistItem {
-  id: string;
-  product_id: string;
+  id: number; // ✅ Corregido: debe ser number según Supabase
+  product_id: number; // ✅ Corregido: debe ser number según Supabase
   name: string;
   price_tokens: number;
   image: string;
@@ -28,14 +28,14 @@ interface CartContextType {
   wishlist: WishlistItem[];
   loading: boolean;
   addToCart: (item: Omit<CartItem, 'id' | 'quantity'>) => Promise<void>;
-  removeFromCart: (productId: string) => Promise<void>;
-  updateQuantity: (productId: string, quantity: number) => Promise<void>;
+  removeFromCart: (productId: number) => Promise<void>; // ✅ Corregido
+  updateQuantity: (productId: number, quantity: number) => Promise<void>; // ✅ Corregido
   clearCart: () => Promise<void>;
   getCartTotal: () => number;
   getCartItemsCount: () => number;
   addToWishlist: (item: Omit<WishlistItem, 'id'>) => Promise<void>;
-  removeFromWishlist: (productId: string) => Promise<void>;
-  isInWishlist: (productId: string) => boolean;
+  removeFromWishlist: (productId: number) => Promise<void>; // ✅ Corregido
+  isInWishlist: (productId: number) => boolean; // ✅ Corregido
   migrateLocalStorageToDatabase: () => Promise<void>;
 }
 

@@ -25,7 +25,7 @@ export default function WishlistPage() {
     setLoading(false);
   };
 
-  const handleRemoveFromWishlist = async (productId: string) => {
+  const handleRemoveFromWishlist = async (productId: number) => {
     setLoading(true);
     await removeFromWishlist(productId);
     setLoading(false);
