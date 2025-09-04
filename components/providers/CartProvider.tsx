@@ -135,14 +135,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // TEMPORARILY DISABLED: Database wishlist functionality
-      // TODO: Create ecommerce_wishlists table in Supabase schema
-      /*
+      // Load wishlist from database
       const { data: wishlistItems, error: wishlistError } = await supabase
         .from('ecommerce_wishlists')
         .select(`
           id,
           product_id,
+          created_at,
           products (
             name,
             main_image_url,
@@ -154,7 +153,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       if (!wishlistError && wishlistItems) {
         const formattedWishlist = wishlistItems.map(item => ({
-          id: item.id,
+          id: item.id.toString(), // Convertir de number a string para compatibilidad
           product_id: item.product_id,
           name: item.products?.name || '',
           price_tokens: item.products?.price_tokens || 0,
@@ -163,8 +162,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }));
         setWishlist(formattedWishlist);
       } else {
-      */
-        // Fallback to localStorage (always used until database is ready)
+        // Fallback to localStorage if database fails
         const savedWishlist = localStorage.getItem('red-mafia-wishlist');
         if (savedWishlist) {
           try {
@@ -173,7 +171,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             console.error('Error loading wishlist from localStorage:', error);
           }
         }
-      // }
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     } finally {
@@ -365,19 +363,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addToWishlist = async (item: Omit<WishlistItem, 'id'>) => {
-    // TEMPORARILY DISABLED: Database wishlist functionality
-    // TODO: Create ecommerce_wishlists table in Supabase schema
-    /*
     if (user) {
       // Add to database
       try {
         const existing = wishlist.find(wishItem => wishItem.product_id === item.product_id);
         if (existing) return; // Already in wishlist
 
+        // Convertir user.id (UUID string) a integer para la BD
+        const userIdInt = parseInt(user.id.replace(/-/g, '').substring(0, 8), 16);
+
         const { data, error } = await supabase
           .from('ecommerce_wishlists')
           .insert({
-            user_id: user.id,
+            user_id: userIdInt,
             product_id: item.product_id
           })
           .select('id')
@@ -385,7 +383,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (!error && data) {
           const newItem: WishlistItem = {
-            id: data.id,
+            id: data.id.toString(), // Convertir de number a string para compatibilidad
             product_id: item.product_id,
             name: item.name,
             price_tokens: item.price_tokens,
@@ -396,22 +394,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error adding to wishlist:', error);
+        // Fallback to localStorage
+        setWishlist(prev => {
+          const existing = prev.find(wishItem => wishItem.product_id === item.product_id);
+          if (existing) return prev;
+          return [...prev, { ...item, id: `wish-${Date.now()}` }];
+        });
       }
     } else {
-    */
-      // Add to localStorage (always used until database is ready)
+      // Add to localStorage for guest users
       setWishlist(prev => {
         const existing = prev.find(wishItem => wishItem.product_id === item.product_id);
         if (existing) return prev;
         return [...prev, { ...item, id: `wish-${Date.now()}` }];
       });
-    // }
+    }
   };
 
   const removeFromWishlist = async (productId: string) => {
-    // TEMPORARILY DISABLED: Database wishlist functionality
-    // TODO: Create ecommerce_wishlists table in Supabase schema
-    /*
     if (user) {
       // Remove from database
       try {
@@ -420,7 +420,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const { error } = await supabase
             .from('ecommerce_wishlists')
             .delete()
-            .eq('id', item.id);
+            .eq('id', parseInt(item.id)); // Convertir de string a number para la BD
 
           if (!error) {
             setWishlist(prev => prev.filter(item => item.product_id !== productId));
@@ -428,12 +428,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error removing from wishlist:', error);
+        // Fallback to localStorage
+        setWishlist(prev => prev.filter(item => item.product_id !== productId));
       }
     } else {
-    */
-      // Remove from localStorage (always used until database is ready)
+      // Remove from localStorage for guest users
       setWishlist(prev => prev.filter(item => item.product_id !== productId));
-    // }
+    }
   };
 
   const isInWishlist = (productId: string) => {
