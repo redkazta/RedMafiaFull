@@ -7,7 +7,7 @@ import { useCart } from '@/components/providers/CartProvider';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 interface ProductActionsProps {
-  productId: string;
+  productId: number; // ✅ Corregido: debe ser number según Supabase
   productName: string;
   productPrice: number;
   productImage: string;
