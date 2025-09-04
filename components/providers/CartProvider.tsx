@@ -71,7 +71,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         loadGuestData();
       }
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, loadUserData, loadGuestData]);
 
   const loadUserData = async () => {
     if (!user) return;
