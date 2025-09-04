@@ -226,15 +226,15 @@ export default function ProductPage() {
               {/* Stock Status */}
               <div className="flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${
-                  product.stock_quantity > 10 ? 'bg-green-400' :
-                  product.stock_quantity > 0 ? 'bg-yellow-400' : 'bg-red-400'
+                  (product.stock_quantity ?? 0) > 10 ? 'bg-green-400' :
+                  (product.stock_quantity ?? 0) > 0 ? 'bg-yellow-400' : 'bg-red-400'
                 }`}></div>
                 <span className={`text-sm ${
-                  product.stock_quantity > 10 ? 'text-green-400' :
-                  product.stock_quantity > 0 ? 'text-yellow-400' : 'text-red-400'
+                  (product.stock_quantity ?? 0) > 10 ? 'text-green-400' :
+                  (product.stock_quantity ?? 0) > 0 ? 'text-yellow-400' : 'text-red-400'
                 }`}>
-                  {product.stock_quantity > 10 ? 'En stock' :
-                   product.stock_quantity > 0 ? `Solo ${product.stock_quantity} disponibles` :
+                  {(product.stock_quantity ?? 0) > 10 ? 'En stock' :
+                   (product.stock_quantity ?? 0) > 0 ? `Solo ${(product.stock_quantity ?? 0)} disponibles` :
                    'Sin stock'}
                 </span>
               </div>

@@ -282,7 +282,7 @@ export default function TiendaPage() {
 
                                          <div className="flex items-center justify-between">
                        <div className="text-primary-400 font-bold text-lg">
-                         {product.price_tokens.toLocaleString()} tokens
+                         {(product.price_tokens ?? 0).toLocaleString()} tokens
                        </div>
                        <div className="text-gray-300 text-sm">
                          ${product.price ? product.price.toFixed(2) : 'N/A'} USD

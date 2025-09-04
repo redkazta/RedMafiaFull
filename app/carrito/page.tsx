@@ -115,7 +115,7 @@ export default function CarritoPage() {
                           {item.category}
                         </p>
                         <p className="text-primary-400 font-bold text-lg">
-                          {item.price_tokens.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Tokens
+                          {(item.price_tokens ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Tokens
                         </p>
                       </div>
                       

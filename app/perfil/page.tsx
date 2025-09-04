@@ -227,7 +227,7 @@ export default function ProfilePage() {
 
                   <div className="flex items-center space-x-4 mt-4 md:mt-0">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-primary-400">{tokenBalance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+                      <div className="text-2xl font-bold text-primary-400">{(tokenBalance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                       <div className="text-sm text-gray-400">Tokens</div>
                     </div>
                   </div>
@@ -236,15 +236,15 @@ export default function ProfilePage() {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-3 gap-4 mt-6">
                   <div className="text-center">
-                    <div className="text-xl font-bold text-white">{stats.ordersCount}</div>
+                    <div className="text-xl font-bold text-white">{stats.ordersCount ?? 0}</div>
                     <div className="text-sm text-gray-400">Órdenes</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-bold text-white">{stats.wishlistCount}</div>
+                    <div className="text-xl font-bold text-white">{stats.wishlistCount ?? 0}</div>
                     <div className="text-sm text-gray-400">Favoritos</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-bold text-white">{stats.reviewsCount}</div>
+                    <div className="text-xl font-bold text-white">{stats.reviewsCount ?? 0}</div>
                     <div className="text-sm text-gray-400">Reseñas</div>
                   </div>
                 </div>

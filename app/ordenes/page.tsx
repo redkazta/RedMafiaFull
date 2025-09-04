@@ -285,13 +285,13 @@ export default function OrdersPage() {
                         <div>
                           <p className="text-gray-400 text-sm">Total</p>
                           <p className="text-xl font-bold text-primary-400">
-                            {order.total_tokens.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Tokens
+                            {(order.total_tokens ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Tokens
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-400 text-sm">Productos</p>
                           <p className="text-white font-medium">
-                            {order.purchase_order_items.length} artículo{order.purchase_order_items.length !== 1 ? 's' : ''}
+                            {(order.purchase_order_items?.length ?? 0)} artículo{(order.purchase_order_items?.length ?? 0) !== 1 ? 's' : ''}
                           </p>
                         </div>
                         <div>
@@ -307,21 +307,25 @@ export default function OrdersPage() {
                     <div className="p-6">
                       <h4 className="text-white font-medium mb-4">Productos</h4>
                       <div className="space-y-3">
-                        {order.purchase_order_items.map((item) => (
+                        {order.purchase_order_items?.map((item) => (
                           <div key={item.id} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
                             <div className="flex-1">
-                              <h5 className="text-white font-medium">Producto #{item.product_id}</h5>
+                              <h5 className="text-white font-medium">Producto #{item.product_id ?? 'N/A'}</h5>
                               <p className="text-gray-400 text-sm">
-                                {item.unit_price_tokens} Tokens × {item.quantity}
+                                {(item.unit_price_tokens ?? 0)} Tokens × {(item.quantity ?? 0)}
                               </p>
                             </div>
                             <div className="text-right">
                               <p className="text-primary-400 font-bold">
-                                {item.total_tokens.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Tokens
+                                {(item.total_tokens ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Tokens
                               </p>
                             </div>
                           </div>
-                        ))}
+                        )) ?? (
+                          <div className="text-center py-4 text-gray-400">
+                            No hay productos en esta orden
+                          </div>
+                        )}
                       </div>
                     </div>
 
