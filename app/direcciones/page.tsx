@@ -10,37 +10,24 @@ import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
 interface UserLocation {
-  id: string;
-  user_id: string;
-  address_type: string;
-  street_address: string;
-  apartment?: string | null;
+  id: number;
+  user_id: string | null;
   city: string;
-  state: string;
+  country: string | null;
   postal_code: string;
-  country: string;
-  is_default: boolean;
-  is_active: boolean;
-  recipient_name?: string | null;
-  phone?: string | null;
-  company?: string | null;
-  instructions?: string | null;
-  created_at: string;
-  updated_at: string;
+  state: string;
+  street: string;
+  is_default: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 interface LocationFormData {
-  address_type: string;
-  address_line_1: string;
-  address_line_2: string;
+  street: string;
   city: string;
   state: string;
   postal_code: string;
   country: string;
-  recipient_name: string;
-  phone: string;
-  company: string;
-  instructions: string;
   is_default: boolean;
 }
 
@@ -53,17 +40,11 @@ export default function AddressesPage() {
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState<LocationFormData>({
-    address_type: 'shipping',
-    address_line_1: '',
-    address_line_2: '',
+    street: '',
     city: '',
     state: '',
     postal_code: '',
     country: 'México',
-    recipient_name: '',
-    phone: '',
-    company: '',
-    instructions: '',
     is_default: false
   });
 
@@ -76,7 +57,6 @@ export default function AddressesPage() {
         .from('user_addresses')
         .select('*')
         .eq('user_id', user.id)
-        .eq('is_active', true)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -105,46 +85,17 @@ export default function AddressesPage() {
 
   const resetForm = () => {
     setFormData({
-      address_type: 'shipping',
-      address_line_1: '',
-      address_line_2: '',
+      street: '',
       city: '',
       state: '',
       postal_code: '',
       country: 'México',
-      recipient_name: '',
-      phone: '',
-      company: '',
-      instructions: '',
       is_default: false
     });
     setEditingLocation(null);
     setShowForm(false);
   };
 
-  const getAddressTypeIcon = (addressType: string) => {
-    switch (addressType) {
-      case 'billing':
-        return <FiBriefcase className="w-5 h-5 text-primary-400" />;
-      case 'shipping':
-      case 'both':
-      default:
-        return <FiHome className="w-5 h-5 text-primary-400" />;
-    }
-  };
-
-  const getAddressTypeText = (addressType: string) => {
-    switch (addressType) {
-      case 'billing':
-        return 'Facturación';
-      case 'shipping':
-        return 'Envío';
-      case 'both':
-        return 'Facturación y Envío';
-      default:
-        return addressType;
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,17 +108,11 @@ export default function AddressesPage() {
         const { error } = await supabase
           .from('user_addresses')
           .update({
-            address_type: formData.address_type,
-            address_line_1: formData.address_line_1,
-            address_line_2: formData.address_line_2 || undefined,
+            street: formData.street,
             city: formData.city,
             state: formData.state,
             postal_code: formData.postal_code,
             country: formData.country,
-            recipient_name: formData.recipient_name || undefined,
-            phone: formData.phone || undefined,
-            company: formData.company || undefined,
-            instructions: formData.instructions || undefined,
             is_default: formData.is_default,
             updated_at: new Date().toISOString()
           })
@@ -177,26 +122,17 @@ export default function AddressesPage() {
         toast.success('Ubicación actualizada correctamente');
       } else {
         // Create new location
-        const insertData: any = {
-          address_type: formData.address_type,
-          address_line_1: formData.address_line_1,
-          city: formData.city,
-          state: formData.state,
-          postal_code: formData.postal_code,
-          country: formData.country,
-          is_default: formData.is_default
-        };
-
-        // Add optional fields only if they have values
-        if (formData.address_line_2) insertData.address_line_2 = formData.address_line_2;
-        if (formData.recipient_name) insertData.recipient_name = formData.recipient_name;
-        if (formData.phone) insertData.phone = formData.phone;
-        if (formData.company) insertData.company = formData.company;
-        if (formData.instructions) insertData.instructions = formData.instructions;
-
         const { error } = await supabase
           .from('user_addresses')
-          .insert(insertData);
+          .insert({
+            user_id: user!.id,
+            street: formData.street,
+            city: formData.city,
+            state: formData.state,
+            postal_code: formData.postal_code,
+            country: formData.country,
+            is_default: formData.is_default
+          });
 
         if (error) throw error;
         toast.success('Ubicación agregada correctamente');
@@ -214,30 +150,24 @@ export default function AddressesPage() {
 
   const handleEdit = (location: UserLocation) => {
     setFormData({
-      address_type: location.address_type,
-      address_line_1: location.street_address,
-      address_line_2: location.apartment || '',
+      street: location.street,
       city: location.city,
       state: location.state,
       postal_code: location.postal_code,
       country: location.country,
-      recipient_name: location.recipient_name || '',
-      phone: location.phone || '',
-      company: location.company || '',
-      instructions: location.instructions || '',
       is_default: location.is_default
     });
     setEditingLocation(location);
     setShowForm(true);
   };
 
-  const handleDelete = async (locationId: string) => {
+  const handleDelete = async (locationId: number) => {
     if (!confirm('¿Estás seguro de que quieres eliminar esta ubicación?')) return;
 
     try {
       const { error } = await supabase
         .from('user_addresses')
-        .update({ is_active: false })
+        .delete()
         .eq('id', locationId);
 
       if (error) throw error;
@@ -250,7 +180,7 @@ export default function AddressesPage() {
     }
   };
 
-  const handleSetDefault = async (locationId: string) => {
+  const handleSetDefault = async (locationId: number) => {
     if (!user) return;
 
     try {
@@ -393,11 +323,11 @@ export default function AddressesPage() {
                         {/* Address Header */}
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center space-x-3">
-                            {getAddressTypeIcon(address.address_type)}
+                            <FiMapPin className="w-5 h-5 text-primary-400" />
                             <div>
                               <div className="flex items-center space-x-2">
                                 <span className="text-white font-medium">
-                                  {getAddressTypeText(address.address_type)}
+                                  Dirección
                                 </span>
                                 {address.is_default && (
                                   <span className="inline-flex items-center space-x-1 px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
@@ -407,7 +337,7 @@ export default function AddressesPage() {
                                 )}
                               </div>
                               <p className="text-gray-400 text-sm">
-                                {address.recipient_name}
+                                Usuario
                               </p>
                             </div>
                           </div>
@@ -432,26 +362,9 @@ export default function AddressesPage() {
 
                         {/* Address Details */}
                         <div className="space-y-2 text-gray-300">
-                          <p>{address.street_address}</p>
-                          {address.apartment && <p>{address.apartment}</p>}
+                          <p>{address.street}</p>
                           <p>{address.city}, {address.state} {address.postal_code}</p>
                           <p>{address.country}</p>
-                          {address.recipient_name && (
-                            <p className="text-primary-400">Destinatario: {address.recipient_name}</p>
-                          )}
-                          {address.company && (
-                            <p className="text-gray-400">Empresa: {address.company}</p>
-                          )}
-                          {address.phone && (
-                            <p className="text-primary-400">Tel: {address.phone}</p>
-                          )}
-                          {address.instructions && (
-                            <div className="mt-3 p-3 bg-gray-700/30 rounded-lg">
-                              <p className="text-sm text-gray-400">
-                                <strong>Instrucciones:</strong> {address.instructions}
-                              </p>
-                            </div>
-                          )}
                         </div>
 
                         {/* Actions */}
@@ -486,101 +399,27 @@ export default function AddressesPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                      {/* Address Type */}
-                      <div>
-                        <label className="text-white font-medium mb-3 block">Tipo de dirección</label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {[
-                            { value: 'shipping', label: 'Envío', icon: FiHome },
-                            { value: 'billing', label: 'Facturación', icon: FiBriefcase },
-                            { value: 'both', label: 'Ambos', icon: FiMapPin }
-                          ].map((type) => (
-                            <button
-                              key={type.value}
-                              type="button"
-                              onClick={() => handleInputChange('address_type', type.value)}
-                              className={`flex items-center justify-center space-x-2 p-3 rounded-lg border transition-colors ${
-                                formData.address_type === type.value
-                                  ? 'bg-primary-500/20 border-primary-500 text-primary-400'
-                                  : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50'
-                              }`}
-                            >
-                              <type.icon className="w-4 h-4" />
-                              <span className="text-sm font-medium">{type.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Personal Information */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-white font-medium mb-2 block">
-                            Nombre del destinatario *
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.recipient_name}
-                            onChange={(e) => handleInputChange('recipient_name', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-white font-medium mb-2 block">Teléfono</label>
-                          <input
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Company */}
-                      <div>
-                        <label className="text-white font-medium mb-2 block">Empresa (opcional)</label>
-                        <input
-                          type="text"
-                          value={formData.company}
-                          onChange={(e) => handleInputChange('company', e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      {/* Address Line 1 */}
+                      {/* Street Address */}
                       <div>
                         <label className="text-white font-medium mb-2 block">
-                          Dirección línea 1 *
+                          Dirección completa *
                         </label>
                         <input
                           type="text"
-                          value={formData.address_line_1}
-                          onChange={(e) => handleInputChange('address_line_1', e.target.value)}
-                          placeholder="Calle, número, colonia"
+                          value={formData.street}
+                          onChange={(e) => handleInputChange('street', e.target.value)}
+                          placeholder="Calle, número, colonia, ciudad"
                           className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                           required
                         />
                       </div>
 
-                      {/* Address Line 2 */}
-                      <div>
-                        <label className="text-white font-medium mb-2 block">
-                          Dirección línea 2 (opcional)
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.address_line_2}
-                          onChange={(e) => handleInputChange('address_line_2', e.target.value)}
-                          placeholder="Apartamento, suite, piso, etc."
-                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      {/* Location */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* City and State */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-white font-medium mb-2 block">Ciudad *</label>
+                          <label className="text-white font-medium mb-2 block">
+                            Ciudad *
+                          </label>
                           <input
                             type="text"
                             value={formData.city}
@@ -590,7 +429,9 @@ export default function AddressesPage() {
                           />
                         </div>
                         <div>
-                          <label className="text-white font-medium mb-2 block">Estado *</label>
+                          <label className="text-white font-medium mb-2 block">
+                            Estado *
+                          </label>
                           <input
                             type="text"
                             value={formData.state}
@@ -599,8 +440,14 @@ export default function AddressesPage() {
                             required
                           />
                         </div>
+                      </div>
+
+                      {/* Postal Code and Country */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-white font-medium mb-2 block">Código Postal *</label>
+                          <label className="text-white font-medium mb-2 block">
+                            Código Postal *
+                          </label>
                           <input
                             type="text"
                             value={formData.postal_code}
@@ -609,35 +456,21 @@ export default function AddressesPage() {
                             required
                           />
                         </div>
-                      </div>
-
-                      {/* Country */}
-                      <div>
-                        <label className="text-white font-medium mb-2 block">País *</label>
-                        <select
-                          value={formData.country}
-                          onChange={(e) => handleInputChange('country', e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          required
-                        >
-                          <option value="México">México</option>
-                          <option value="Estados Unidos">Estados Unidos</option>
-                          <option value="Canadá">Canadá</option>
-                        </select>
-                      </div>
-
-                      {/* Instructions */}
-                      <div>
-                        <label className="text-white font-medium mb-2 block">
-                          Instrucciones especiales (opcional)
-                        </label>
-                        <textarea
-                          value={formData.instructions}
-                          onChange={(e) => handleInputChange('instructions', e.target.value)}
-                          placeholder="Ej: Tocar el timbre, dejar en portería, etc."
-                          rows={3}
-                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-                        />
+                        <div>
+                          <label className="text-white font-medium mb-2 block">
+                            País *
+                          </label>
+                          <select
+                            value={formData.country}
+                            onChange={(e) => handleInputChange('country', e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            required
+                          >
+                            <option value="México">México</option>
+                            <option value="Estados Unidos">Estados Unidos</option>
+                            <option value="Canadá">Canadá</option>
+                          </select>
+                        </div>
                       </div>
 
                       {/* Set as Default */}
@@ -653,6 +486,7 @@ export default function AddressesPage() {
                           Establecer como dirección por defecto
                         </label>
                       </div>
+
 
                       {/* Actions */}
                       <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-700">
