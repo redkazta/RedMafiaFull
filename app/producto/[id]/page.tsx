@@ -42,19 +42,45 @@ export default function ProductPage() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Get product data
+      const { data: productData, error: productError } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_categories (id, name)
-        `)
-        .eq('id', productId) // ✅ Ahora productId es number
+        .select('*')
+        .eq('id', productId)
         .eq('is_active', true)
         .single();
 
-      if (!error && data) {
-        setProduct(data);
+      if (productError) {
+        console.error('Error loading product:', productError);
+        return;
       }
+
+      if (!productData) {
+        console.error('Product not found');
+        return;
+      }
+
+      // Get category data separately if category_id exists
+      let categoryData = null;
+      if (productData.category_id) {
+        const { data: catData, error: catError } = await supabase
+          .from('product_categories')
+          .select('id, name')
+          .eq('id', productData.category_id)
+          .single();
+
+        if (!catError && catData) {
+          categoryData = catData;
+        }
+      }
+
+      // Combine data
+      const data = {
+        ...productData,
+        product_categories: categoryData
+      };
+
+      setProduct(data);
     } catch (error) {
       console.error('Error loading product:', error);
     } finally {

@@ -40,23 +40,45 @@ export default function TiendaPage() {
 
   const loadProducts = async () => {
     try {
-      const { data, error } = await supabase
+      // Get products data
+      const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_categories (
-            id,
-            name
-          )
-        `)
+        .select('*')
         .order('name');
 
-      if (error) {
-        console.error('Error loading products:', error);
+      if (productsError) {
+        console.error('Error loading products:', productsError);
         return;
       }
 
-      setProducts(data || []);
+      if (!productsData || productsData.length === 0) {
+        setProducts([]);
+        return;
+      }
+
+      // Get all unique category IDs
+      const categoryIds = [...new Set(productsData.map(p => p.category_id).filter(id => id !== null))];
+
+      // Get category data for all products
+      let categoriesMap = new Map();
+      if (categoryIds.length > 0) {
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('product_categories')
+          .select('id, name')
+          .in('id', categoryIds);
+
+        if (!categoriesError && categoriesData) {
+          categoriesMap = new Map(categoriesData.map(cat => [cat.id, cat]));
+        }
+      }
+
+      // Combine products with their categories
+      const data = productsData.map(product => ({
+        ...product,
+        product_categories: product.category_id ? categoriesMap.get(product.category_id) || null : null
+      }));
+
+      setProducts(data);
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {
