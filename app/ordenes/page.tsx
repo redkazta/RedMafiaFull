@@ -8,25 +8,29 @@ import { FiArrowLeft, FiShoppingBag, FiEye, FiPackage, FiTruck, FiCheckCircle, F
 import { useAuth } from '@/components/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 
-interface OrderItem {
-  id: string;
-  product_name: string;
-  unit_price_tokens: number;
-  quantity: number;
-  total_price_tokens: number;
-}
-
 interface Order {
-  id: string;
+  id: number;
   order_number: string;
+  total_amount: number;
   total_tokens: number;
-  total_items: number;
-  status: string;
-  created_at: string;
-  confirmed_at?: string | null;
-  shipped_at?: string | null;
-  delivered_at?: string | null;
-  purchase_order_items: OrderItem[];
+  status: string | null;
+  user_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  purchase_order_items: Array<{
+    id: number;
+    order_id: number | null;
+    product_id: number | null;
+    quantity: number;
+    total_price: number;
+    total_tokens: number;
+    unit_price: number;
+    unit_price_tokens: number;
+    created_at: string | null;
+    products: {
+      name: string;
+    } | null;
+  }>;
 }
 
 export default function OrdersPage() {
@@ -44,7 +48,10 @@ export default function OrdersPage() {
         .from('purchase_orders')
         .select(`
           *,
-          purchase_order_items (*)
+          purchase_order_items (
+            *,
+            products (name)
+          )
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -65,7 +72,7 @@ export default function OrdersPage() {
     }
   }, [user, loadOrders]);
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | null) => {
     switch (status) {
       case 'pending':
         return <FiClock className="w-5 h-5 text-yellow-400" />;
@@ -84,7 +91,7 @@ export default function OrdersPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
@@ -103,7 +110,7 @@ export default function OrdersPage() {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: string | null) => {
     switch (status) {
       case 'pending':
         return 'Pendiente';
@@ -235,7 +242,7 @@ export default function OrdersPage() {
                               Orden #{order.order_number}
                             </h3>
                             <p className="text-gray-400 text-sm">
-                              {new Date(order.created_at).toLocaleDateString('es-ES')}
+                              {order.created_at ? new Date(order.created_at).toLocaleDateString('es-ES') : 'Fecha no disponible'}
                             </p>
                           </div>
                         </div>
@@ -258,7 +265,7 @@ export default function OrdersPage() {
                         <div>
                           <p className="text-gray-400 text-sm">Productos</p>
                           <p className="text-white font-medium">
-                            {order.total_items} artículo{order.total_items !== 1 ? 's' : ''}
+                            {order.purchase_order_items.length} artículo{order.purchase_order_items.length !== 1 ? 's' : ''}
                           </p>
                         </div>
                         <div>
@@ -277,14 +284,14 @@ export default function OrdersPage() {
                         {order.purchase_order_items.map((item) => (
                           <div key={item.id} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
                             <div className="flex-1">
-                              <h5 className="text-white font-medium">{item.product_name}</h5>
+                              <h5 className="text-white font-medium">{item.products?.name || `Producto #${item.product_id}`}</h5>
                               <p className="text-gray-400 text-sm">
                                 {item.unit_price_tokens} Tokens × {item.quantity}
                               </p>
                             </div>
                             <div className="text-right">
                               <p className="text-primary-400 font-bold">
-                                {item.total_price_tokens.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Tokens
+                                {item.total_tokens.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Tokens
                               </p>
                             </div>
                           </div>
