@@ -27,9 +27,6 @@ interface Order {
     unit_price: number;
     unit_price_tokens: number;
     created_at: string | null;
-    products: {
-      name: string;
-    } | null;
   }>;
 }
 
@@ -48,10 +45,7 @@ export default function OrdersPage() {
         .from('purchase_orders')
         .select(`
           *,
-          purchase_order_items (
-            *,
-            products (name)
-          )
+          purchase_order_items (*)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -284,7 +278,7 @@ export default function OrdersPage() {
                         {order.purchase_order_items.map((item) => (
                           <div key={item.id} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
                             <div className="flex-1">
-                              <h5 className="text-white font-medium">{item.products?.name || `Producto #${item.product_id}`}</h5>
+                              <h5 className="text-white font-medium">Producto #{item.product_id}</h5>
                               <p className="text-gray-400 text-sm">
                                 {item.unit_price_tokens} Tokens × {item.quantity}
                               </p>
