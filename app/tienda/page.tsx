@@ -23,10 +23,7 @@ interface Product {
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
-  product_categories?: {
-    id: number; // ✅ Corregido: debe ser number según Supabase
-    name: string;
-  } | null;
+  // product_categories no existe en la BD, así que lo quitamos
 }
 
 export default function TiendaPage() {
@@ -45,13 +42,7 @@ export default function TiendaPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_categories (
-            id,
-            name
-          )
-        `)
+        .select('*')
         .order('name');
 
       if (error) {
@@ -68,31 +59,15 @@ export default function TiendaPage() {
   };
 
   const loadCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('product_categories')
-        .select('*')
-        .order('name');
+    // Categorias fijas ya que product_categories no existe en la BD
+    const categoryOptions = [
+      { key: 'all', label: 'Todo', icon: FiShoppingCart },
+      { key: 'featured', label: 'Destacados', icon: FiTrendingUp },
+      { key: 'ropa', label: 'Ropa', icon: FiTag },
+      { key: 'accesorios', label: 'Accesorios', icon: FiStar }
+    ];
 
-      if (error) {
-        console.error('Error loading categories:', error);
-        return;
-      }
-
-      const categoryOptions = [
-    { key: 'all', label: 'Todo', icon: FiShoppingCart },
-        { key: 'featured', label: 'Destacados', icon: FiTrendingUp },
-        ...data.map(cat => ({
-          key: cat.slug,
-          label: cat.name,
-          icon: cat.slug === 'ropa' ? FiTag : FiStar
-        }))
-      ];
-
-      setCategories(categoryOptions);
-    } catch (error) {
-      console.error('Error loading categories:', error);
-    }
+    setCategories(categoryOptions);
   };
 
   const handleAddToCart = async (product: Product) => {
@@ -231,7 +206,7 @@ export default function TiendaPage() {
                               handleToggleWishlist(product);
                             }}
                                                      className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-colors ${
-                              isInWishlist(product.id.toString()) 
+                              isInWishlist(product.id)
                                ? 'bg-red-500/80 hover:bg-red-500'
                                : 'bg-gray-600/80 hover:bg-gray-500'
                             }`}
@@ -258,10 +233,10 @@ export default function TiendaPage() {
                         </div>
                       </div>
                       
-                    {product.product_categories && (
+                    {product.category_id && (
                       <div className="mt-2">
                         <span className="inline-block bg-primary-500/20 text-primary-300 text-xs px-2 py-1 rounded-full">
-                          {product.product_categories.name}
+                          Categoría {product.category_id}
                         </span>
                       </div>
                           )}
