@@ -333,36 +333,9 @@ export default function OrdersPage() {
                           <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                           <span className="text-gray-400">Orden creada:</span>
                           <span className="text-white">
-                            {order.created_at ? new Date(order.created_at).toLocaleString('es-ES') : 'Fecha no disponible'}
+                            {order.created_at ? new Date(order.created_at).toLocaleString('es-ES') : 'N/A'}
                           </span>
                         </div>
-                        {order.confirmed_at && (
-                          <div className="flex items-center space-x-3 text-sm">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span className="text-gray-400">Confirmada:</span>
-                            <span className="text-white">
-                              {order.confirmed_at ? new Date(order.confirmed_at).toLocaleString('es-ES') : 'Fecha no disponible'}
-                            </span>
-                          </div>
-                        )}
-                        {order.shipped_at && (
-                          <div className="flex items-center space-x-3 text-sm">
-                            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                            <span className="text-gray-400">Enviada:</span>
-                            <span className="text-white">
-                              {order.shipped_at ? new Date(order.shipped_at).toLocaleString('es-ES') : 'Fecha no disponible'}
-                            </span>
-                          </div>
-                        )}
-                        {order.delivered_at && (
-                          <div className="flex items-center space-x-3 text-sm">
-                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                            <span className="text-gray-400">Entregada:</span>
-                            <span className="text-white">
-                              {order.delivered_at ? new Date(order.delivered_at).toLocaleString('es-ES') : 'Fecha no disponible'}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
