@@ -12,19 +12,19 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 interface Product {
-  id: string;
+  id: number; // ✅ Corregido: debe ser number según Supabase
   name: string;
   description?: string | null;
   price?: number;
   price_tokens: number;
-  category_id?: string | null;
+  category_id?: number | null; // ✅ Corregido: debe ser number según Supabase
   image_url?: string | null;
   stock_quantity?: number;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
   product_categories?: {
-    id: string;
+    id: number; // ✅ Corregido: debe ser number según Supabase
     name: string;
   } | null;
 }
