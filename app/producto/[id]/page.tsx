@@ -23,9 +23,11 @@ interface Product {
   created_at: string | null;
   updated_at: string | null;
   product_categories: { id: number; name: string; } | null;
-  // Campos adicionales para compatibilidad
-  main_image_url?: string | null;
-  image_urls?: string[] | null;
+  // Campos adicionales para compatibilidad - HACERLOS OBLIGATORIOS
+  main_image_url: string | null;
+  image_urls: string[] | null;
+  status: string | null;
+  is_featured: boolean | null;
 }
 
 export default function ProductPage() {
@@ -78,9 +80,14 @@ export default function ProductPage() {
       }
 
       // Combine data
-      const data = {
+      const data: Product = {
         ...productData,
-        product_categories: categoryData
+        product_categories: categoryData,
+        // Agregar campos faltantes con valores por defecto
+        main_image_url: productData.image_url, // Usar image_url como main_image_url
+        image_urls: null, // No hay múltiples imágenes
+        status: productData.is_active ? 'active' : 'inactive', // Mapear is_active a status
+        is_featured: false // Por defecto no es destacado
       };
 
       setProduct(data);

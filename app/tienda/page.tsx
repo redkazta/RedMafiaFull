@@ -24,11 +24,11 @@ interface Product {
   created_at: string | null;
   updated_at: string | null;
   product_categories: { id: number; name: string; } | null;
-  // Campos adicionales para compatibilidad
-  main_image_url?: string | null;
-  image_urls?: string[] | null;
-  status?: string;
-  is_featured?: boolean | null;
+  // Campos adicionales para compatibilidad - HACERLOS OBLIGATORIOS
+  main_image_url: string | null;
+  image_urls: string[] | null;
+  status: string | null;
+  is_featured: boolean | null;
 }
 
 export default function TiendaPage() {
@@ -78,9 +78,14 @@ export default function TiendaPage() {
       }
 
       // Combine products with their categories
-      const data = productsData.map(product => ({
+      const data: Product[] = productsData.map(product => ({
         ...product,
-        product_categories: product.category_id ? categoriesMap.get(product.category_id) || null : null
+        product_categories: product.category_id ? categoriesMap.get(product.category_id) || null : null,
+        // Agregar campos faltantes con valores por defecto
+        main_image_url: product.image_url, // Usar image_url como main_image_url
+        image_urls: null, // No hay múltiples imágenes
+        status: product.is_active ? 'active' : 'inactive', // Mapear is_active a status
+        is_featured: false // Por defecto no es destacado
       }));
 
       setProducts(data);
