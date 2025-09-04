@@ -12,18 +12,18 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 interface Product {
-  id: number; // ✅ Corregido: debe ser number según Supabase
+  id: number;
   name: string;
-  description?: string | null;
-  price?: number;
+  price: number;
   price_tokens: number;
-  category_id?: number | null; // ✅ Corregido: debe ser number según Supabase
-  image_url?: string | null;
-  stock_quantity?: number;
-  is_active?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  // product_categories no existe en la BD, así que lo quitamos
+  image_url: string | null;
+  description: string | null;
+  category_id: number | null;
+  stock_quantity: number | null;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  product_categories: { id: number; name: string; } | null;
 }
 
 export default function TiendaPage() {
@@ -42,7 +42,13 @@ export default function TiendaPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_categories (
+            id,
+            name
+          )
+        `)
         .order('name');
 
       if (error) {
@@ -59,15 +65,31 @@ export default function TiendaPage() {
   };
 
   const loadCategories = async () => {
-    // Categorias fijas ya que product_categories no existe en la BD
-    const categoryOptions = [
-      { key: 'all', label: 'Todo', icon: FiShoppingCart },
-      { key: 'featured', label: 'Destacados', icon: FiTrendingUp },
-      { key: 'ropa', label: 'Ropa', icon: FiTag },
-      { key: 'accesorios', label: 'Accesorios', icon: FiStar }
-    ];
+    try {
+      const { data, error } = await supabase
+        .from('product_categories')
+        .select('*')
+        .order('name');
 
-    setCategories(categoryOptions);
+      if (error) {
+        console.error('Error loading categories:', error);
+        return;
+      }
+
+      const categoryOptions = [
+    { key: 'all', label: 'Todo', icon: FiShoppingCart },
+        { key: 'featured', label: 'Destacados', icon: FiTrendingUp },
+        ...data.map(cat => ({
+          key: cat.slug,
+          label: cat.name,
+          icon: cat.slug === 'ropa' ? FiTag : FiStar
+        }))
+      ];
+
+      setCategories(categoryOptions);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
   };
 
   const handleAddToCart = async (product: Product) => {
@@ -233,10 +255,10 @@ export default function TiendaPage() {
                         </div>
                       </div>
                       
-                    {product.category_id && (
+                    {product.product_categories && (
                       <div className="mt-2">
                         <span className="inline-block bg-primary-500/20 text-primary-300 text-xs px-2 py-1 rounded-full">
-                          Categoría {product.category_id}
+                          {product.product_categories.name}
                         </span>
                       </div>
                           )}

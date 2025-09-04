@@ -13,7 +13,7 @@ import { supabase } from '@/lib/supabase';
 interface Product {
   id: number;
   name: string;
-  price: number; // ✅ Campo que existe en Supabase
+  price: number;
   price_tokens: number;
   image_url: string | null;
   description: string | null;
@@ -22,12 +22,7 @@ interface Product {
   is_active: boolean | null;
   created_at: string | null;
   updated_at: string | null;
-  // product_categories no existe en la BD, así que lo quitamos
-  // Add missing properties that we need
-  main_image_url?: string | null; // Para compatibilidad
-  image_urls?: string[] | null; // Para compatibilidad
-  status?: string; // Para compatibilidad
-  is_featured?: boolean | null; // Para compatibilidad
+  product_categories: { id: number; name: string; } | null;
 }
 
 export default function ProductPage() {
@@ -49,8 +44,12 @@ export default function ProductPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_categories (id, name)
+        `)
         .eq('id', productId) // ✅ Ahora productId es number
+        .eq('is_active', true)
         .single();
 
       if (!error && data) {
@@ -165,7 +164,7 @@ export default function ProductPage() {
                     <span className="text-gray-400">(156 reseñas)</span>
                   </div>
                   <span className="text-gray-400">•</span>
-                  <span className="text-gray-400">Categoría #{product.category_id}</span>
+                  <span className="text-gray-400">{product.product_categories?.name}</span>
                 </div>
               </div>
 
@@ -207,8 +206,8 @@ export default function ProductPage() {
                 productId={product.id}
                 productName={product.name}
                 productPrice={product.price_tokens}
-                productImage={product.image_url || product.main_image_url || '📦'}
-                productCategory={`Categoría ${product.category_id || 'N/A'}`}
+                productImage={product.image_url || '📦'}
+                productCategory={product.product_categories?.name || 'Sin categoría'}
                 stockQuantity={product.stock_quantity}
                 className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
               />
