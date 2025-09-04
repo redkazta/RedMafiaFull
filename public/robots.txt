@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Host
+Host: https://red-mafia.vercel.app
+
+# Sitemaps
+Sitemap: https://red-mafia.vercel.app/sitemap.xml
