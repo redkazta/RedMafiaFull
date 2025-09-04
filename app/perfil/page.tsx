@@ -310,7 +310,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <label className="text-sm text-gray-400">Miembro desde</label>
-                      <p className="text-white">{profile?.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES') : 'No disponible'}</p>
+                      <p className="text-white">{profile?.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES') : 'Fecha no disponible'}</p>
                     </div>
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export default function ProfilePage() {
                           <div className="flex-1">
                             <p className="text-white text-sm">{activity.description}</p>
                             <p className="text-gray-400 text-xs">
-                              {new Date(activity.created_at).toLocaleString('es-ES')}
+                              {activity.created_at ? new Date(activity.created_at).toLocaleString('es-ES') : 'Fecha no disponible'}
                             </p>
                           </div>
                         </div>

@@ -24,6 +24,11 @@ interface Product {
   created_at: string | null;
   updated_at: string | null;
   product_categories: { id: number; name: string; } | null;
+  // Campos adicionales para compatibilidad
+  main_image_url?: string | null;
+  image_urls?: string[] | null;
+  status?: string;
+  is_featured?: boolean | null;
 }
 
 export default function TiendaPage() {

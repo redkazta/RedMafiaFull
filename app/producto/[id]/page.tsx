@@ -23,6 +23,9 @@ interface Product {
   created_at: string | null;
   updated_at: string | null;
   product_categories: { id: number; name: string; } | null;
+  // Campos adicionales para compatibilidad
+  main_image_url?: string | null;
+  image_urls?: string[] | null;
 }
 
 export default function ProductPage() {
@@ -146,7 +149,7 @@ export default function ProductPage() {
               {/* Main Image */}
               <div className="aspect-square bg-gradient-to-br from-primary-500/20 to-accent-500/20 rounded-xl overflow-hidden">
                 <div className="w-full h-full flex items-center justify-center text-9xl">
-                  {product.main_image_url || '📦'}
+                  {product.image_url || product.main_image_url || '📦'}
                 </div>
               </div>
 
