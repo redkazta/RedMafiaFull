@@ -28,6 +28,7 @@ interface Product {
   image_urls: string[] | null;
   status: string | null;
   is_featured: boolean | null;
+  original_price_mxn: number | null;
 }
 
 export default function ProductPage() {
@@ -87,7 +88,8 @@ export default function ProductPage() {
         main_image_url: productData.image_url, // Usar image_url como main_image_url
         image_urls: null, // No hay múltiples imágenes
         status: productData.is_active ? 'active' : 'inactive', // Mapear is_active a status
-        is_featured: false // Por defecto no es destacado
+        is_featured: false, // Por defecto no es destacado
+        original_price_mxn: null // No hay precio original por defecto
       };
 
       setProduct(data);
