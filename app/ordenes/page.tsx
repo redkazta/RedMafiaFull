@@ -41,18 +41,50 @@ export default function OrdersPage() {
 
     setLoadingOrders(true);
     try {
-      const { data, error } = await supabase
+      // First, get all orders for the user
+      const { data: ordersData, error: ordersError } = await supabase
         .from('purchase_orders')
-        .select(`
-          *,
-          purchase_order_items (*)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        setOrders(data);
+      if (ordersError) {
+        console.error('Error loading orders:', ordersError);
+        return;
       }
+
+      if (!ordersData || ordersData.length === 0) {
+        setOrders([]);
+        return;
+      }
+
+      // Get all order IDs
+      const orderIds = ordersData.map(order => order.id);
+
+      // Then, get all order items for these orders
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('purchase_order_items')
+        .select('*')
+        .in('order_id', orderIds);
+
+      if (itemsError) {
+        console.error('Error loading order items:', itemsError);
+        // Still set orders without items if items fail
+        const ordersWithEmptyItems = ordersData.map(order => ({
+          ...order,
+          purchase_order_items: []
+        }));
+        setOrders(ordersWithEmptyItems);
+        return;
+      }
+
+      // Combine orders with their items
+      const ordersWithItems = ordersData.map(order => ({
+        ...order,
+        purchase_order_items: itemsData?.filter(item => item.order_id === order.id) || []
+      }));
+
+      setOrders(ordersWithItems);
     } catch (error) {
       console.error('Error loading orders:', error);
     } finally {
