@@ -204,8 +204,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             console.error('Error loading wishlist from localStorage:', error);
           }
         }
-      // */
-      
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     } finally {
@@ -379,14 +378,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error('Error adding to wishlist:', error);
       }
     } else {
-
-    // Add to localStorage (works for both authenticated and guest users)
-    setWishlist(prev => {
-      const existing = prev.find(wishItem => wishItem.product_id === item.product_id);
-      if (existing) return prev;
-      return [...prev, { ...item, id: `wish-${Date.now()}` }];
-    });
-  };
+      // Add to localStorage (works for both authenticated and guest users)
+      setWishlist(prev => {
+        const existing = prev.find(wishItem => wishItem.product_id === item.product_id);
+        if (existing) return prev;
+        return [...prev, { ...item, id: `wish-${Date.now()}` }];
+      });
+    }
+  */
 
   const removeFromWishlist = async (productId: string) => {
     // TEMPORARILY DISABLED: Database wishlist functionality
@@ -413,6 +412,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Remove from localStorage
       setWishlist(prev => prev.filter(item => item.product_id !== productId));
     }
+    */
 
     // Remove from localStorage (works for both authenticated and guest users)
     setWishlist(prev => prev.filter(item => item.product_id !== productId));
