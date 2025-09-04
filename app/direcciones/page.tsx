@@ -127,11 +127,11 @@ export default function AddressesPage() {
           .insert({
             user_id: user!.id,
             street: formData.street,
-            city: formData.city,
-            state: formData.state,
-            postal_code: formData.postal_code,
-            country: formData.country,
-            is_default: formData.is_default
+          city: formData.city,
+          state: formData.state,
+          postal_code: formData.postal_code,
+          country: formData.country,
+          is_default: formData.is_default
           });
 
         if (error) throw error;
@@ -400,12 +400,12 @@ export default function AddressesPage() {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                       {/* Street Address */}
-                      <div>
-                        <label className="text-white font-medium mb-2 block">
+                        <div>
+                          <label className="text-white font-medium mb-2 block">
                           Dirección completa *
-                        </label>
-                        <input
-                          type="text"
+                          </label>
+                          <input
+                            type="text"
                           value={formData.street}
                           onChange={(e) => handleInputChange('street', e.target.value)}
                           placeholder="Calle, número, colonia, ciudad"
@@ -416,10 +416,10 @@ export default function AddressesPage() {
 
                       {/* City and State */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-white font-medium mb-2 block">
+                      <div>
+                        <label className="text-white font-medium mb-2 block">
                             Ciudad *
-                          </label>
+                        </label>
                           <input
                             type="text"
                             value={formData.city}
@@ -456,21 +456,21 @@ export default function AddressesPage() {
                             required
                           />
                         </div>
-                        <div>
+                      <div>
                           <label className="text-white font-medium mb-2 block">
                             País *
                           </label>
-                          <select
-                            value={formData.country}
-                            onChange={(e) => handleInputChange('country', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            required
-                          >
-                            <option value="México">México</option>
-                            <option value="Estados Unidos">Estados Unidos</option>
-                            <option value="Canadá">Canadá</option>
-                          </select>
-                        </div>
+                        <select
+                          value={formData.country}
+                          onChange={(e) => handleInputChange('country', e.target.value)}
+                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          required
+                        >
+                          <option value="México">México</option>
+                          <option value="Estados Unidos">Estados Unidos</option>
+                          <option value="Canadá">Canadá</option>
+                        </select>
+                      </div>
                       </div>
 
                       {/* Set as Default */}
