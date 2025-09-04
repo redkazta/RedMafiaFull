@@ -11,26 +11,23 @@ import { supabase } from '@/lib/supabase';
 
 // Product interface matching actual Supabase data
 interface Product {
-  id: number; // ✅ Corregido: debe ser number según Supabase
+  id: number;
   name: string;
-  slug: string | null;
-  description: string | null;
-  category_id: number | null; // ✅ Corregido: debe ser number según Supabase
-  artist_id: string | null;
+  price: number; // ✅ Campo que existe en Supabase
   price_tokens: number;
-  original_price_mxn: number | null;
-  stock_quantity: number;
-  main_image_url: string | null;
-  image_urls: string[] | null;
-  status: string;
-  is_featured: boolean | null;
+  image_url: string | null;
+  description: string | null;
+  category_id: number | null;
+  stock_quantity: number | null;
+  is_active: boolean | null;
   created_at: string | null;
   updated_at: string | null;
-  product_categories: { id: number; name: string; } | null; // ✅ Corregido: id debe ser number
+  // product_categories no existe en la BD, así que lo quitamos
   // Add missing properties that we need
-  price?: number;
-  image_url?: string | null;
-  is_active?: boolean;
+  main_image_url?: string | null; // Para compatibilidad
+  image_urls?: string[] | null; // Para compatibilidad
+  status?: string; // Para compatibilidad
+  is_featured?: boolean | null; // Para compatibilidad
 }
 
 export default function ProductPage() {
@@ -52,12 +49,8 @@ export default function ProductPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_categories (id, name)
-        `)
+        .select('*')
         .eq('id', productId) // ✅ Ahora productId es number
-        .eq('status', 'active')
         .single();
 
       if (!error && data) {
@@ -172,7 +165,7 @@ export default function ProductPage() {
                     <span className="text-gray-400">(156 reseñas)</span>
                   </div>
                   <span className="text-gray-400">•</span>
-                  <span className="text-gray-400">{product.product_categories?.name}</span>
+                  <span className="text-gray-400">Categoría #{product.category_id}</span>
                 </div>
               </div>
 
@@ -214,8 +207,8 @@ export default function ProductPage() {
                 productId={product.id}
                 productName={product.name}
                 productPrice={product.price_tokens}
-                productImage={product.main_image_url || '📦'}
-                productCategory={product.product_categories?.name || 'Sin categoría'}
+                productImage={product.image_url || product.main_image_url || '📦'}
+                productCategory={`Categoría ${product.category_id || 'N/A'}`}
                 stockQuantity={product.stock_quantity}
                 className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
               />
