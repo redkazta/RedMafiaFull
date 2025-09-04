@@ -333,7 +333,7 @@ export default function OrdersPage() {
                           <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                           <span className="text-gray-400">Orden creada:</span>
                           <span className="text-white">
-                            {new Date(order.created_at).toLocaleString('es-ES')}
+                            {order.created_at ? new Date(order.created_at).toLocaleString('es-ES') : 'Fecha no disponible'}
                           </span>
                         </div>
                         {order.confirmed_at && (
@@ -341,7 +341,7 @@ export default function OrdersPage() {
                             <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                             <span className="text-gray-400">Confirmada:</span>
                             <span className="text-white">
-                              {new Date(order.confirmed_at).toLocaleString('es-ES')}
+                              {order.confirmed_at ? new Date(order.confirmed_at).toLocaleString('es-ES') : 'Fecha no disponible'}
                             </span>
                           </div>
                         )}
@@ -350,7 +350,7 @@ export default function OrdersPage() {
                             <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                             <span className="text-gray-400">Enviada:</span>
                             <span className="text-white">
-                              {new Date(order.shipped_at).toLocaleString('es-ES')}
+                              {order.shipped_at ? new Date(order.shipped_at).toLocaleString('es-ES') : 'Fecha no disponible'}
                             </span>
                           </div>
                         )}
@@ -359,7 +359,7 @@ export default function OrdersPage() {
                             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                             <span className="text-gray-400">Entregada:</span>
                             <span className="text-white">
-                              {new Date(order.delivered_at).toLocaleString('es-ES')}
+                              {order.delivered_at ? new Date(order.delivered_at).toLocaleString('es-ES') : 'Fecha no disponible'}
                             </span>
                           </div>
                         )}
