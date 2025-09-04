@@ -7,7 +7,7 @@ import { Footer } from '@/components/layout/Footer';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
 import { FiEdit, FiSettings, FiShoppingBag, FiMapPin, FiArrowLeft, FiCalendar, FiMail, FiUser, FiGlobe, FiHeart, FiLogIn } from 'react-icons/fi';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { useCart } from '@/components/providers/CartProvider';
+import { useCart, WishlistItem } from '@/components/providers/CartProvider';
 import { supabase } from '@/lib/supabase';
 
 export default function ProfilePage() {
@@ -375,7 +375,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {wishlist.map((item) => (
+                    {wishlist.map((item: WishlistItem) => (
                       <div key={item.product_id} className="bg-gray-700/50 rounded-lg p-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center text-xl">
