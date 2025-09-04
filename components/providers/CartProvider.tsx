@@ -169,9 +169,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // Load wishlist from database - TEMPORARILY DISABLED
-      // TODO: Create ecommerce_wishlists table in Supabase schema
-      /*
+      // Load wishlist from database
       const { data: wishlistItems, error: wishlistError } = await supabase
         .from('ecommerce_wishlists')
         .select(`
@@ -197,7 +195,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }));
         setWishlist(formattedWishlist);
       } else {
-      */
         // Fallback to localStorage if database fails
         const savedWishlist = localStorage.getItem('red-mafia-wishlist');
         if (savedWishlist) {
@@ -382,7 +379,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error('Error adding to wishlist:', error);
       }
     } else {
-    // */
 
     // Add to localStorage (works for both authenticated and guest users)
     setWishlist(prev => {
@@ -417,7 +413,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Remove from localStorage
       setWishlist(prev => prev.filter(item => item.product_id !== productId));
     }
-    */
 
     // Remove from localStorage (works for both authenticated and guest users)
     setWishlist(prev => prev.filter(item => item.product_id !== productId));
