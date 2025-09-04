@@ -201,6 +201,435 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_orders: {
+        Row: {
+          created_at: string | null
+          id: number
+          order_number: string
+          status: string | null
+          total_amount: number
+          total_tokens: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          order_number: string
+          status?: string | null
+          total_amount: number
+          total_tokens: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          order_number?: string
+          status?: string | null
+          total_amount?: number
+          total_tokens?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      purchase_order_items: {
+        Row: {
+          created_at: string | null
+          id: number
+          order_id: number | null
+          product_id: number | null
+          quantity: number
+          total_price: number
+          total_tokens: number
+          unit_price: number
+          unit_price_tokens: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          order_id?: number | null
+          product_id?: number | null
+          quantity: number
+          total_price: number
+          total_tokens: number
+          unit_price: number
+          unit_price_tokens: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          order_id?: number | null
+          product_id?: number | null
+          quantity?: number
+          total_price?: number
+          total_tokens?: number
+          unit_price?: number
+          unit_price_tokens?: number
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          id: string
+          user_id: string | null
+          display_name: string | null
+          bio: string | null
+          avatar_url: string | null
+          location: string | null
+          website: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          display_name?: string | null
+          bio?: string | null
+          avatar_url?: string | null
+          location?: string | null
+          website?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          display_name?: string | null
+          bio?: string | null
+          avatar_url?: string | null
+          location?: string | null
+          website?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_tokens: {
+        Row: {
+          id: number
+          user_id: string | null
+          balance: number | null
+          current_balance: number | null
+          total_earned: number | null
+          total_spent: number | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          balance?: number | null
+          current_balance?: number | null
+          total_earned?: number | null
+          total_spent?: number | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          balance?: number | null
+          current_balance?: number | null
+          total_earned?: number | null
+          total_spent?: number | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      token_transactions: {
+        Row: {
+          id: number
+          user_id: string | null
+          amount: number
+          transaction_type: string
+          description: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          amount: number
+          transaction_type: string
+          description?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          amount?: number
+          transaction_type?: string
+          description?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      user_activity_log: {
+        Row: {
+          id: number
+          user_id: string | null
+          activity_type: string
+          description: string | null
+          metadata: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          activity_type: string
+          description?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          activity_type?: string
+          description?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          id: number
+          user_id: string | null
+          setting_key: string
+          setting_value: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          setting_key: string
+          setting_value: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          setting_key?: string
+          setting_value?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      avatars: {
+        Row: {
+          id: number
+          user_id: string | null
+          file_path: string
+          file_name: string
+          file_size: number
+          mime_type: string
+          is_primary: boolean
+          created_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          file_path: string
+          file_name: string
+          file_size: number
+          mime_type: string
+          is_primary?: boolean
+          created_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          file_path?: string
+          file_name?: string
+          file_size?: number
+          mime_type?: string
+          is_primary?: boolean
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      user_avatars: {
+        Row: {
+          id: number
+          user_id: string | null
+          avatar_id: number | null
+          is_primary: boolean
+          created_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          avatar_id?: number | null
+          is_primary?: boolean
+          created_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          avatar_id?: number | null
+          is_primary?: boolean
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      product_categories: {
+        Row: {
+          id: number
+          name: string
+          description: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          name: string
+          description?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          name?: string
+          description?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      artist_profiles: {
+        Row: {
+          id: number
+          user_id: string | null
+          artist_name: string
+          bio: string | null
+          genre: string | null
+          social_media: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          artist_name: string
+          bio?: string | null
+          genre?: string | null
+          social_media?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          artist_name?: string
+          bio?: string | null
+          genre?: string | null
+          social_media?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          id: number
+          title: string
+          description: string | null
+          event_date: string
+          location: string | null
+          artist_id: number | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          title: string
+          description?: string | null
+          event_date: string
+          location?: string | null
+          artist_id?: number | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          title?: string
+          description?: string | null
+          event_date?: string
+          location?: string | null
+          artist_id?: number | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      music_tracks: {
+        Row: {
+          id: number
+          title: string
+          artist_id: number | null
+          album_id: number | null
+          duration: number | null
+          file_path: string
+          genre: string | null
+          release_date: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          title: string
+          artist_id?: number | null
+          album_id?: number | null
+          duration?: number | null
+          file_path: string
+          genre?: string | null
+          release_date?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          title?: string
+          artist_id?: number | null
+          album_id?: number | null
+          duration?: number | null
+          file_path?: string
+          genre?: string | null
+          release_date?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      order_status_history: {
+        Row: {
+          id: number
+          order_id: number | null
+          status: string
+          notes: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: number
+          order_id?: number | null
+          status: string
+          notes?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: number
+          order_id?: number | null
+          status?: string
+          notes?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
