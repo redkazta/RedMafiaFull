@@ -73,7 +73,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, authLoading, loadUserData, loadGuestData]);
 
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
@@ -177,9 +177,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const loadGuestData = () => {
+  const loadGuestData = useCallback(() => {
     // Load from localStorage for guest users
     const savedCart = localStorage.getItem('red-mafia-cart');
     const savedWishlist = localStorage.getItem('red-mafia-wishlist');
@@ -199,7 +199,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error('Error loading wishlist from localStorage:', error);
       }
     }
-  };
+  }, []);
 
   // Save to localStorage for guest users
   useEffect(() => {

@@ -120,10 +120,11 @@ export function MiniCart() {
                         {/* Product Image */}
                         {item.image && item.image.startsWith('http') ? (
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-700/50">
-                            <img
+                            <Image
                               src={item.image}
                               alt={item.name}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                                 e.currentTarget.nextElementSibling?.classList.remove('hidden');

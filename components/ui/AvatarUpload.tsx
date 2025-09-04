@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { FiUpload, FiCamera, FiX, FiCheck } from 'react-icons/fi';
 import { supabase } from '@/lib/supabase';
@@ -195,10 +196,11 @@ export function AvatarUpload({
         onClick={handleFileSelect}
       >
         {(preview || currentAvatar) ? (
-          <img
+          <Image
             src={preview || currentAvatar}
             alt="Avatar"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -309,10 +311,11 @@ export function AvatarDisplay({
   return (
     <div className={`${sizeClasses[size]} ${className} bg-gradient-to-br from-primary-500/20 to-accent-500/20 rounded-full overflow-hidden border border-gray-600`}>
       {src && !imageError ? (
-        <img
+        <Image
           src={src}
           alt={alt}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
           onError={handleImageError}
         />
       ) : (

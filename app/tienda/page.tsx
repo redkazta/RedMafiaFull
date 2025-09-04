@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -197,11 +198,12 @@ export default function TiendaPage() {
                   >
                     {/* Product Image */}
                     <div className="relative aspect-square bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center overflow-hidden">
-                                         <img
-                       src={product.image_url || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
-                       alt={product.name}
-                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                       onError={(e) => {
+                      <Image
+                        src={product.image_url || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
+                        alt={product.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
                          e.currentTarget.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
                        }}
                      />
