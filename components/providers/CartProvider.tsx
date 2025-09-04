@@ -169,7 +169,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // Load wishlist from database
+      // Load wishlist from database - TEMPORARILY DISABLED
+      // TODO: Create ecommerce_wishlists table in Supabase schema
+      /*
       const { data: wishlistItems, error: wishlistError } = await supabase
         .from('ecommerce_wishlists')
         .select(`
@@ -195,6 +197,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }));
         setWishlist(formattedWishlist);
       } else {
+      */
         // Fallback to localStorage if database fails
         const savedWishlist = localStorage.getItem('red-mafia-wishlist');
         if (savedWishlist) {
@@ -204,7 +207,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             console.error('Error loading wishlist from localStorage:', error);
           }
         }
-      }
+      // */
       
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -346,6 +349,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addToWishlist = async (item: Omit<WishlistItem, 'id'>) => {
+    // TEMPORARILY DISABLED: Database wishlist functionality
+    // TODO: Create ecommerce_wishlists table in Supabase schema
+    /*
     if (user) {
       // Add to database
       try {
@@ -376,16 +382,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error('Error adding to wishlist:', error);
       }
     } else {
-      // Add to localStorage (guest user)
-      setWishlist(prev => {
-        const existing = prev.find(wishItem => wishItem.product_id === item.product_id);
-        if (existing) return prev;
-        return [...prev, { ...item, id: `wish-${Date.now()}` }];
-      });
-    }
+    // */
+
+    // Add to localStorage (works for both authenticated and guest users)
+    setWishlist(prev => {
+      const existing = prev.find(wishItem => wishItem.product_id === item.product_id);
+      if (existing) return prev;
+      return [...prev, { ...item, id: `wish-${Date.now()}` }];
+    });
   };
 
   const removeFromWishlist = async (productId: string) => {
+    // TEMPORARILY DISABLED: Database wishlist functionality
+    // TODO: Create ecommerce_wishlists table in Supabase schema
+    /*
     if (user) {
       // Remove from database
       try {
@@ -407,6 +417,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Remove from localStorage
       setWishlist(prev => prev.filter(item => item.product_id !== productId));
     }
+    */
+
+    // Remove from localStorage (works for both authenticated and guest users)
+    setWishlist(prev => prev.filter(item => item.product_id !== productId));
   };
 
   const isInWishlist = (productId: string) => {
