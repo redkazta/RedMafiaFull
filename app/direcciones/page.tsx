@@ -154,8 +154,8 @@ export default function AddressesPage() {
       city: location.city,
       state: location.state,
       postal_code: location.postal_code,
-      country: location.country,
-      is_default: location.is_default
+      country: location.country || 'México',
+      is_default: location.is_default || false
     });
     setEditingLocation(location);
     setShowForm(true);
