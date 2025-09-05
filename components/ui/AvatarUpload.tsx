@@ -123,7 +123,7 @@ export function AvatarUpload({
       }
 
       // Establecer como avatar primario usando la función de PostgreSQL
-      const { error: primaryError } = await supabase.rpc('set_primary_avatar', {
+      const { error: primaryError } = await (supabase.rpc as any)('set_primary_avatar', {
         user_uuid: user.id,
         avatar_uuid: avatarData.id
       });
