@@ -89,7 +89,6 @@ export function MiniLocation() {
           className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600/20 to-red-700/20 hover:from-red-600/30 hover:to-red-700/30 border border-red-600/30 rounded-lg transition-all duration-300 group"
         >
           <div className="relative">
-            <div className="absolute -top-1 -left-2 w-2 h-2 bg-red-500 rounded-full animate-pulse border border-gray-900"></div>
             <FiMapPin className="w-5 h-5 text-red-400 group-hover:text-red-300 transition-colors" />
           </div>
           <span className="text-sm font-medium text-white hidden sm:block">
@@ -168,7 +167,6 @@ export function MiniLocation() {
         className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600/20 to-red-700/20 hover:from-red-600/30 hover:to-red-700/30 border border-red-600/30 rounded-lg transition-all duration-300 group"
       >
         <div className="relative">
-          <div className="absolute -top-1 -left-2 w-2 h-2 bg-red-500 rounded-full animate-pulse border border-gray-900"></div>
           <FiMapPin className="w-5 h-5 text-red-400 group-hover:text-red-300 transition-colors" />
         </div>
         <span className="text-sm font-medium text-white hidden sm:block">

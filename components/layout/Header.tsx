@@ -583,26 +583,18 @@ export function Header() {
                     {/* Left Side - Logo + MiniLocation */}
           <div className="flex items-center space-x-3 sm:space-x-4 lg:space-x-8 flex-shrink-0">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4 group">
+            <Link href="/" className="flex items-center group">
               <div className="relative">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 group-hover:shadow-xl group-hover:shadow-red-600/40 transition-all duration-300">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 group-hover:shadow-xl group-hover:shadow-red-600/40 transition-all duration-300">
                   <Image
                     src="/redmafialogo.png"
-                    alt="LA RED MAFIA Logo"
-                    width={48}
-                    height={48}
+                    alt="LA RED MAFIA"
+                    width={80}
+                    height={80}
                     className="w-full h-full object-contain rounded-lg"
                   />
                 </div>
-                <div className="absolute -inset-1 bg-gradient-to-br from-red-600 to-red-900 rounded-lg opacity-0 group-hover:opacity-30 transition-opacity duration-300 blur-sm"></div>
-              </div>
-              <div className="hidden sm:block">
-                <div className="font-display font-bold text-base sm:text-lg lg:text-xl xl:text-2xl bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text text-transparent group-hover:from-red-300 group-hover:to-red-500 transition-all duration-300">
-                  LA RED MAFIA
-                </div>
-                <div className="text-xs text-red-300/70 -mt-1 font-medium tracking-wide">
-                  血の音楽帝国 • Plataforma Musical
-                </div>
+                <div className="absolute -inset-2 bg-gradient-to-br from-red-600 to-red-900 rounded-lg opacity-0 group-hover:opacity-30 transition-opacity duration-300 blur-md"></div>
               </div>
             </Link>
 

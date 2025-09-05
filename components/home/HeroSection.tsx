@@ -80,22 +80,22 @@ export function HeroSection() {
         ))}
       </div>
 
-      {/* Animated Lines */}
+      {/* Animated Lines - Centered with Logo */}
       <div className="absolute inset-0">
-        <motion.div 
-          className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"
+        <motion.div
+          className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"
           animate={{ scaleX: [0, 1, 0] }}
           transition={{ duration: 4, repeat: Infinity, delay: 0 }}
         />
-        <motion.div 
-          className="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent-500/50 to-transparent"
+        <motion.div
+          className="absolute top-2/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent-500/50 to-transparent"
           animate={{ scaleX: [0, 1, 0] }}
           transition={{ duration: 4, repeat: Infinity, delay: 2 }}
         />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center">
+      <div className="relative z-10 container mx-auto px-4 text-center -mt-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -104,7 +104,7 @@ export function HeroSection() {
         >
           {/* Main Logo with Neon Effect */}
           <motion.div
-            className="mb-8 relative flex justify-center"
+            className="-mt-16 mb-4 relative flex justify-center"
             initial={{ opacity: 0, y: 30, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1, delay: 0.2, type: "spring", stiffness: 100 }}
@@ -115,30 +115,20 @@ export function HeroSection() {
                 alt="LA RED MAFIA"
                 className="h-32 md:h-40 lg:h-52 w-auto object-contain"
                 style={{
-                  filter: 'drop-shadow(0 0 30px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 60px rgba(239, 68, 68, 0.4)) drop-shadow(0 0 90px rgba(239, 68, 68, 0.2))'
+                  filter: 'drop-shadow(0 0 60px rgba(239, 68, 68, 0.4)) drop-shadow(0 0 120px rgba(239, 68, 68, 0.2)) drop-shadow(0 0 180px rgba(239, 68, 68, 0.1))'
                 }}
               />
-              {/* Glowing border effect */}
+              {/* Glowing border effect - más grande y difuminado */}
               <div
                 className="absolute inset-0 rounded-lg"
                 style={{
-                  background: 'linear-gradient(45deg, rgba(239, 68, 68, 0.3), rgba(249, 115, 22, 0.3))',
-                  filter: 'blur(20px)',
-                  transform: 'scale(1.1)',
+                  background: 'linear-gradient(45deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2))',
+                  filter: 'blur(40px)',
+                  transform: 'scale(1.5)',
                   zIndex: -1
                 }}
               />
             </div>
-            {/* Glowing underline */}
-            <motion.div
-              className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent"
-              initial={{ width: 0 }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 1.5, delay: 1 }}
-              style={{
-                boxShadow: '0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.4)'
-              }}
-            />
           </motion.div>
 
 
