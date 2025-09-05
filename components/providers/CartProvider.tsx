@@ -1,8 +1,37 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
 import { supabase } from '@/lib/supabase';
+
+// Tipos para las consultas con joins
+interface CartItemWithProduct {
+  id: number;
+  product_id: number | null;
+  quantity: number;
+  price_tokens: number;
+  products?: {
+    name: string;
+    main_image_url: string;
+    product_categories?: {
+      name: string;
+    };
+  } | null;
+}
+
+interface WishlistItemWithProduct {
+  id: number;
+  product_id: number;
+  created_at: string;
+  products?: {
+    name: string;
+    main_image_url: string;
+    price_tokens: number;
+    product_categories?: {
+      name: string;
+    };
+  } | null;
+}
 
 export interface CartItem {
   id: number; // ✅ Corregido: debe ser number según Supabase
@@ -62,17 +91,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [userCartId, setUserCartId] = useState<string | null>(null);
 
-  // Load data when auth state changes
-  useEffect(() => {
-    if (!authLoading) {
-      if (user) {
-        loadUserData();
-      } else {
-        loadGuestData();
-      }
-    }
-  }, [user, authLoading, loadUserData, loadGuestData]);
-
   const loadUserData = useCallback(async () => {
     if (!user) return;
 
@@ -101,7 +119,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (cartData) {
-        setUserCartId(cartData.id);
+        setUserCartId(cartData.id.toString());
 
         // Load cart items
         const { data: cartItems, error: cartItemsError } = await supabase
@@ -117,12 +135,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               product_categories (name)
             )
           `)
-          .eq('cart_id', cartData.id);
+          .eq('cart_id', cartData.id) as { data: CartItemWithProduct[] | null; error: any };
 
         if (!cartItemsError && cartItems) {
           const formattedCart = cartItems
-            .filter(item => item.product_id !== null)
-            .map(item => ({
+            .filter((item: CartItemWithProduct) => item.product_id !== null)
+            .map((item: CartItemWithProduct) => ({
               id: item.id,
               product_id: item.product_id!,
               name: item.products?.name || '',
@@ -149,11 +167,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             product_categories (name)
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', parseInt(user.id.replace(/-/g, '').substring(0, 8), 16)) as { data: WishlistItemWithProduct[] | null; error: any };
 
       if (!wishlistError && wishlistItems) {
-        const formattedWishlist = wishlistItems.map(item => ({
-          id: item.id.toString(), // Convertir de number a string para compatibilidad
+        const formattedWishlist = wishlistItems.map((item: WishlistItemWithProduct) => ({
+          id: item.id,
           product_id: item.product_id,
           name: item.products?.name || '',
           price_tokens: item.products?.price_tokens || 0,
@@ -201,6 +219,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Load data when auth state changes
+  useEffect(() => {
+    if (!authLoading) {
+      if (user) {
+        loadUserData();
+      } else {
+        loadGuestData();
+      }
+    }
+  }, [user, authLoading, loadUserData, loadGuestData]);
+
   // Save to localStorage for guest users
   useEffect(() => {
     if (!user) {
@@ -228,7 +257,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const { data, error } = await supabase
             .from('cart_items')
             .insert({
-              cart_id: userCartId,
+              cart_id: parseInt(userCartId!),
               product_id: item.product_id,
               quantity: 1,
               price_tokens: item.price_tokens
@@ -265,14 +294,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
         return [...prev, {
           ...item,
-          id: `local-${Date.now()}`,
+          id: Date.now(),
           quantity: 1
         }];
       });
     }
   };
 
-  const removeFromCart = async (productId: string) => {
+  const removeFromCart = async (productId: number) => {
     if (user && userCartId) {
       // Remove from database
       try {
@@ -296,7 +325,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateQuantity = async (productId: string, quantity: number) => {
+  const updateQuantity = async (productId: number, quantity: number) => {
     if (quantity <= 0) {
       await removeFromCart(productId);
       return;
@@ -340,7 +369,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const { error } = await supabase
           .from('cart_items')
           .delete()
-          .eq('cart_id', userCartId);
+          .eq('cart_id', parseInt(userCartId!));
 
         if (!error) {
           setCart([]);
@@ -383,7 +412,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (!error && data) {
           const newItem: WishlistItem = {
-            id: data.id.toString(), // Convertir de number a string para compatibilidad
+            id: data.id,
             product_id: item.product_id,
             name: item.name,
             price_tokens: item.price_tokens,
@@ -398,7 +427,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setWishlist(prev => {
           const existing = prev.find(wishItem => wishItem.product_id === item.product_id);
           if (existing) return prev;
-          return [...prev, { ...item, id: `wish-${Date.now()}` }];
+          return [...prev, { ...item, id: Date.now() }];
         });
       }
     } else {
@@ -406,12 +435,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setWishlist(prev => {
         const existing = prev.find(wishItem => wishItem.product_id === item.product_id);
         if (existing) return prev;
-        return [...prev, { ...item, id: `wish-${Date.now()}` }];
+        return [...prev, { ...item, id: Date.now() }];
       });
     }
   };
 
-  const removeFromWishlist = async (productId: string) => {
+  const removeFromWishlist = async (productId: number) => {
     if (user) {
       // Remove from database
       try {
@@ -420,7 +449,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const { error } = await supabase
             .from('ecommerce_wishlists')
             .delete()
-            .eq('id', parseInt(item.id)); // Convertir de string a number para la BD
+            .eq('id', item.id);
 
           if (!error) {
             setWishlist(prev => prev.filter(item => item.product_id !== productId));
@@ -437,7 +466,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isInWishlist = (productId: string) => {
+  const isInWishlist = (productId: number) => {
     return wishlist.some(item => item.product_id === productId);
   };
 
