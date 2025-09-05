@@ -26,8 +26,7 @@ interface UserLocation {
   updated_at: string | null;
 }
 
-export function MiniLocation() {
-  const [isOpen, setIsOpen] = useState(false);
+export function MiniLocation({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: boolean) => void }) {
   const [locations, setLocations] = useState<UserLocation[]>([]);
   const [loading, setLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);

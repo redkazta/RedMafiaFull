@@ -562,6 +562,7 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
+  const [isMiniLocationOpen, setIsMiniLocationOpen] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
 
@@ -570,7 +571,8 @@ export function Header() {
     component: 'Header',
     pathname,
     mobileMenuOpen,
-    isUserPanelOpen
+    isUserPanelOpen,
+    isMiniLocationOpen
   });
   const { user, profile, tokenBalance, signOut, loading } = useAuth();
 
@@ -606,13 +608,17 @@ export function Header() {
             <div
               className="hidden md:block"
               onMouseEnter={() => {
-                // This will be handled by MiniLocation component
+                if (hoverTimeout) clearTimeout(hoverTimeout);
+                setIsMiniLocationOpen(true);
               }}
               onMouseLeave={() => {
-                // This will be handled by MiniLocation component
+                const timeout = setTimeout(() => {
+                  setIsMiniLocationOpen(false);
+                }, 300); // Consistent with MiniCart and MiniWishlist
+                setHoverTimeout(timeout);
               }}
             >
-              <MiniLocation />
+              <MiniLocation isOpen={isMiniLocationOpen} setIsOpen={setIsMiniLocationOpen} />
             </div>
           </div>
 
@@ -707,7 +713,7 @@ export function Header() {
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <MiniLocation />
+                  <MiniLocation isOpen={isMiniLocationOpen} setIsOpen={setIsMiniLocationOpen} />
                 </div>
               </div>
 
