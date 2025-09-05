@@ -132,7 +132,8 @@ function UserPanel() {
     profileName: profile?.display_name,
     tokenBalance,
     sessionExists: !!session,
-    forceRender
+    forceRender,
+    isUserPanelOpen
   });
 
   // Hover state management
@@ -146,7 +147,7 @@ function UserPanel() {
     const timeout = setTimeout(() => {
       setIsUserPanelOpen(false);
       setIsHovered(false);
-    }, 150); // Small delay to prevent flickering
+    }, 300); // Consistent with MiniCart and MiniWishlist
     setHoverTimeout(timeout);
   };
 
@@ -576,6 +577,7 @@ export function Header() {
     setMobileMenuOpen(false);
   };
 
+
   return (
     <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-md border-b border-red-900/50 shadow-lg shadow-red-900/20 w-full">
       <div className="w-full max-w-full px-3 sm:px-6 lg:px-8">
@@ -585,7 +587,7 @@ export function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center group">
               <div className="relative">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 group-hover:shadow-xl group-hover:shadow-red-600/40 transition-all duration-300">
+                <div className="w-16 h-12 sm:w-24 sm:h-16 lg:w-32 lg:h-20 group-hover:shadow-xl group-hover:shadow-red-600/40 transition-all duration-300">
                   <Image
                     src="/redmafialogo.png"
                     alt="LA RED MAFIA"
