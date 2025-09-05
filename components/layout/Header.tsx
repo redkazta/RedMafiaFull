@@ -114,9 +114,8 @@ const navigation = [
 ];
 
 // User Panel Component - Always visible
-function UserPanel() {
+function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: boolean) => void }) {
   const { user, session, profile, tokenBalance, loading, signOut } = useAuth();
-  const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
   const [forceRender, setForceRender] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -133,19 +132,19 @@ function UserPanel() {
     tokenBalance,
     sessionExists: !!session,
     forceRender,
-    isUserPanelOpen
+    isOpen
   });
 
   // Hover state management
   const handleMouseEnter = () => {
     if (hoverTimeout) clearTimeout(hoverTimeout);
-    setIsUserPanelOpen(true);
+    setIsOpen(true);
     setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
     const timeout = setTimeout(() => {
-      setIsUserPanelOpen(false);
+      setIsOpen(false);
       setIsHovered(false);
     }, 300); // Consistent with MiniCart and MiniWishlist
     setHoverTimeout(timeout);
@@ -153,10 +152,10 @@ function UserPanel() {
 
   // Reset hover state when panel is closed
   useEffect(() => {
-    if (!isUserPanelOpen) {
+    if (!isOpen) {
       setIsHovered(false);
     }
-  }, [isUserPanelOpen]);
+  }, [isOpen]);
 
   // Force render after 3 seconds if still loading
   useEffect(() => {
@@ -220,7 +219,7 @@ function UserPanel() {
 
         {/* User Panel Dropdown */}
         <AnimatePresence>
-          {isUserPanelOpen && (
+          {isOpen && (
             <>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -256,7 +255,7 @@ function UserPanel() {
                   <div className="space-y-2 mb-4">
                     <Link
                       href="/perfil"
-                      onClick={() => setIsUserPanelOpen(false)}
+                      onClick={() => setIsOpen(false)}
                       className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-red-900/20 rounded-lg transition-all duration-300 group"
                     >
                       <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
@@ -270,7 +269,7 @@ function UserPanel() {
 
                     <Link
                       href="/ordenes"
-                      onClick={() => setIsUserPanelOpen(false)}
+                      onClick={() => setIsOpen(false)}
                       className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-red-900/20 rounded-lg transition-all duration-300 group"
                     >
                       <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
@@ -289,7 +288,7 @@ function UserPanel() {
                       <h3 className="text-white font-medium text-sm">Mis Ubicaciones</h3>
                       <Link
                         href="/direcciones"
-                        onClick={() => setIsUserPanelOpen(false)}
+                        onClick={() => setIsOpen(false)}
                         className="flex items-center space-x-1 px-2 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 rounded-md transition-colors text-xs"
                       >
                         <FiPlus className="w-3 h-3" />
@@ -320,7 +319,7 @@ function UserPanel() {
 
                     <Link
                       href="/direcciones"
-                      onClick={() => setIsUserPanelOpen(false)}
+                      onClick={() => setIsOpen(false)}
                       className="flex items-center justify-center w-full mt-3 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
                     >
                       <span>Ver todas las ubicaciones</span>
@@ -332,7 +331,7 @@ function UserPanel() {
                     <button
                       onClick={() => {
                         signOut();
-                        setIsUserPanelOpen(false);
+                        setIsOpen(false);
                       }}
                       className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-all duration-300 group"
                     >
@@ -383,7 +382,7 @@ function UserPanel() {
         </button>
 
         <AnimatePresence>
-          {isUserPanelOpen && (
+          {isOpen && (
             <>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -410,7 +409,7 @@ function UserPanel() {
                   <div className="space-y-3 mb-6">
                     <Link
                       href="/perfil"
-                      onClick={() => setIsUserPanelOpen(false)}
+                      onClick={() => setIsOpen(false)}
                       className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-red-900/20 rounded-lg transition-all duration-300 group"
                     >
                       <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
@@ -428,7 +427,7 @@ function UserPanel() {
                     <button
                       onClick={() => {
                         signOut();
-                        setIsUserPanelOpen(false);
+                        setIsOpen(false);
                       }}
                       className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-all duration-300 group"
                     >
@@ -475,7 +474,7 @@ function UserPanel() {
       </button>
 
       <AnimatePresence>
-        {isUserPanelOpen && (
+        {isOpen && (
           <>
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -535,7 +534,7 @@ function UserPanel() {
                 <div className="space-y-3">
                   <Link
                     href="/login"
-                    onClick={() => setIsUserPanelOpen(false)}
+                    onClick={() => setIsOpen(false)}
                     className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-500 hover:to-red-600 transition-all duration-300 font-semibold"
                   >
                     <FiUser className="w-4 h-4 mr-2" />
@@ -544,7 +543,7 @@ function UserPanel() {
 
                   <Link
                     href="/registro"
-                    onClick={() => setIsUserPanelOpen(false)}
+                    onClick={() => setIsOpen(false)}
                     className="flex items-center justify-center w-full px-4 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-300"
                   >
                     <FiUserPlus className="w-4 h-4 mr-2" />
@@ -562,13 +561,16 @@ function UserPanel() {
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
 
   // Debug log para Header
   console.log('🏠 Header Debug:', {
     component: 'Header',
     pathname,
-    mobileMenuOpen
+    mobileMenuOpen,
+    isUserPanelOpen
   });
   const { user, profile, tokenBalance, signOut, loading } = useAuth();
 
@@ -601,7 +603,15 @@ export function Header() {
             </Link>
 
             {/* Mini Location - Between Logo and Navigation */}
-            <div className="hidden md:block">
+            <div
+              className="hidden md:block"
+              onMouseEnter={() => {
+                // This will be handled by MiniLocation component
+              }}
+              onMouseLeave={() => {
+                // This will be handled by MiniLocation component
+              }}
+            >
               <MiniLocation />
             </div>
           </div>
@@ -639,8 +649,20 @@ export function Header() {
             </div>
 
             {/* User Panel - Always Visible */}
-            <div className="flex items-center ml-2 md:ml-0">
-              <UserPanel />
+            <div
+              className="flex items-center ml-2 md:ml-0"
+              onMouseEnter={() => {
+                if (hoverTimeout) clearTimeout(hoverTimeout);
+                setIsUserPanelOpen(true);
+              }}
+              onMouseLeave={() => {
+                const timeout = setTimeout(() => {
+                  setIsUserPanelOpen(false);
+                }, 300); // Consistent with MiniCart and MiniWishlist
+                setHoverTimeout(timeout);
+              }}
+            >
+              <UserPanel isOpen={isUserPanelOpen} setIsOpen={setIsUserPanelOpen} />
             </div>
 
             {/* Mobile Menu Button - Only on small screens */}
@@ -720,7 +742,7 @@ export function Header() {
                             {/* Mobile User Panel - Always visible */}
               <div className="pt-6 border-t border-gray-700">
                 <div className="px-6 py-3">
-                  <UserPanel />
+                  <UserPanel isOpen={isUserPanelOpen} setIsOpen={setIsUserPanelOpen} />
                 </div>
               </div>
             </div>
