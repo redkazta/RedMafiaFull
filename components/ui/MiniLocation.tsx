@@ -9,19 +9,21 @@ import { supabase } from '@/lib/supabase';
 
 interface UserLocation {
   id: string;
+  user_id: string | null;
   address_type: string;
+  is_default: boolean | null;
+  recipient_name: string;
+  company?: string | null;
+  phone?: string | null;
   address_line_1: string;
   address_line_2?: string | null;
   city: string;
   state: string;
   postal_code: string;
-  country: string;
-  recipient_name?: string | null;
-  phone?: string | null;
-  is_default: boolean;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  country: string | null;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export function MiniLocation() {
@@ -52,9 +54,9 @@ export function MiniLocation() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('user_addresses')
-        .select('*')
+      const { data, error } = await (supabase
+        .from('user_addresses') as any)
+        .select('id, user_id, address_type, is_default, recipient_name, company, phone, address_line_1, address_line_2, city, state, postal_code, country, is_active, created_at, updated_at')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .order('is_default', { ascending: false })

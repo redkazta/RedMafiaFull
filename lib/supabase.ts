@@ -130,7 +130,7 @@ export const getTokenBalance = async (userId: string): Promise<number> => {
     .single();
 
   if (error || !data) return 0;
-  return data.current_balance;
+  return data.current_balance ?? 0;
 };
 
 // Función para crear una transacción de tokens

@@ -241,7 +241,7 @@ export default function ProductPage() {
 
               {/* Product Actions */}
               <ProductActions
-                productId={product.id}
+                productId={product.id.toString()}
                 productName={product.name}
                 productPrice={product.price_tokens}
                 productImage={product.image_url || '📦'}

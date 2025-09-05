@@ -197,7 +197,7 @@ export function AvatarUpload({
       >
         {(preview || currentAvatar) ? (
           <Image
-            src={preview || currentAvatar}
+            src={preview || currentAvatar || '/default-avatar.png'}
             alt="Avatar"
             fill
             className="object-cover"

@@ -17,7 +17,7 @@ export function MiniCart() {
   const itemsCount = getCartItemsCount();
   const total = getCartTotal();
 
-  const dec = (productId: string, current: number) => {
+  const dec = (productId: number, current: number) => {
     if (current <= 1) {
       // remove when going below 1
       removeFromCart(productId);
@@ -26,7 +26,7 @@ export function MiniCart() {
     }
   };
 
-  const inc = (productId: string, current: number) => {
+  const inc = (productId: number, current: number) => {
     updateQuantity(productId, current + 1);
   };
 

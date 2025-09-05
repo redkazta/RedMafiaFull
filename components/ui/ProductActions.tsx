@@ -7,7 +7,7 @@ import { useCart } from '@/components/providers/CartProvider';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 interface ProductActionsProps {
-  productId: number; // ✅ Corregido: debe ser number según Supabase
+  productId: string;
   productName: string;
   productPrice: number;
   productImage: string;
@@ -30,7 +30,7 @@ export function ProductActions({
   const { addToCart, addToWishlist, isInWishlist } = useCart();
   const { user } = useAuth();
 
-  const isInWishlistState = isInWishlist(productId);
+  const isInWishlistState = isInWishlist(Number(productId));
 
   const handleAddToCart = async () => {
     if (quantity > stockQuantity) {
@@ -41,7 +41,7 @@ export function ProductActions({
     setLoading(true);
     try {
       await addToCart({
-        product_id: productId,
+        product_id: Number(productId),
         name: productName,
         price_tokens: productPrice,
         image: productImage,
@@ -60,7 +60,7 @@ export function ProductActions({
       if (isInWishlistState) {
         // Remove from wishlist
         await addToWishlist({
-          product_id: productId,
+          product_id: Number(productId),
           name: productName,
           price_tokens: productPrice,
           image: productImage,
@@ -69,7 +69,7 @@ export function ProductActions({
       } else {
         // Add to wishlist
         await addToWishlist({
-          product_id: productId,
+          product_id: Number(productId),
           name: productName,
           price_tokens: productPrice,
           image: productImage,
@@ -209,13 +209,13 @@ export function QuickActions({
   const [loading, setLoading] = useState(false);
   const { addToCart, addToWishlist, isInWishlist } = useCart();
 
-  const isInWishlistState = isInWishlist(productId);
+  const isInWishlistState = isInWishlist(Number(productId));
 
   const handleQuickAddToCart = async () => {
     setLoading(true);
     try {
       await addToCart({
-        product_id: productId,
+        product_id: Number(productId),
         name: productName,
         price_tokens: productPrice,
         image: productImage,
@@ -232,7 +232,7 @@ export function QuickActions({
     setLoading(true);
     try {
       await addToWishlist({
-        product_id: productId,
+        product_id: Number(productId),
         name: productName,
         price_tokens: productPrice,
         image: productImage,
