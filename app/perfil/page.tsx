@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
-import { FiEdit, FiSettings, FiShoppingBag, FiMapPin, FiArrowLeft, FiCalendar, FiMail, FiUser, FiGlobe, FiHeart, FiLogIn, FiPhone } from 'react-icons/fi';
+import { FiEdit, FiSettings, FiShoppingBag, FiMapPin, FiArrowLeft, FiCalendar, FiMail, FiUser, FiGlobe, FiHeart, FiLogIn, FiPhone, FiSun, FiMoon, FiMonitor, FiBell, FiShield, FiSave } from 'react-icons/fi';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useCart, WishlistItem } from '@/components/providers/CartProvider';
 import { supabase } from '@/lib/supabase';
@@ -33,6 +33,19 @@ export default function ProfilePage() {
     created_at: string;
     items_count: number;
   }>>([]);
+  const [userSettings, setUserSettings] = useState({
+    theme: 'dark',
+    language: 'es',
+    timezone: 'America/Mexico_City',
+    email_notifications: true,
+    push_notifications: true,
+    order_notifications: true,
+    marketing_emails: false,
+    profile_visibility: 'public',
+    show_online_status: true,
+    allow_messages: true,
+    content_filter: 'moderate'
+  });
   const [activeTab, setActiveTab] = useState('overview');
 
   const loadUserStats = useCallback(async () => {
@@ -78,23 +91,51 @@ export default function ProfilePage() {
     if (!user) return;
 
     try {
-      // Mock recent activity since table doesn't exist
+      // Load real activity from user_activity_log
+      const { data, error } = await supabase
+        .from('user_activity_log')
+        .select('id, activity_type, description, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error && data) {
+        // Convertir los datos al formato esperado
+        const formattedData = data.map((activity: any) => ({
+          id: activity.id.toString(),
+          activity_type: activity.activity_type,
+          description: activity.description || 'Actividad sin descripción',
+          created_at: activity.created_at || new Date().toISOString()
+        }));
+        setRecentActivity(formattedData);
+      } else {
+        // Fallback to mock data if no real activity exists
+        setRecentActivity([
+          {
+            id: '1',
+            activity_type: 'login',
+            description: 'Inicio de sesión en la plataforma',
+            created_at: new Date().toISOString()
+          },
+          {
+            id: '2',
+            activity_type: 'profile_view',
+            description: 'Visualización del perfil',
+            created_at: new Date(Date.now() - 86400000).toISOString()
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error loading recent activity:', error);
+      // Fallback to mock data on error
       setRecentActivity([
         {
           id: '1',
-          activity_type: 'purchase',
-          description: 'Compra realizada - Red Mafia Hoodie',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
           activity_type: 'login',
-          description: 'Inicio de sesión',
-          created_at: new Date(Date.now() - 86400000).toISOString()
+          description: 'Inicio de sesión en la plataforma',
+          created_at: new Date().toISOString()
         }
       ]);
-    } catch (error) {
-      console.error('Error loading recent activity:', error);
     }
   }, [user]);
 
@@ -154,16 +195,79 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  const loadUserSettings = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('setting_key, setting_value')
+        .eq('user_id', user.id);
+
+      if (!error && data) {
+        const settings: any = { ...userSettings };
+        data.forEach((setting: any) => {
+          // Convert string values to appropriate types
+          if (setting.setting_value === 'true') {
+            settings[setting.setting_key] = true;
+          } else if (setting.setting_value === 'false') {
+            settings[setting.setting_key] = false;
+          } else {
+            settings[setting.setting_key] = setting.setting_value;
+          }
+        });
+        setUserSettings(settings);
+      }
+    } catch (error) {
+      console.error('Error loading user settings:', error);
+    }
+  }, [user, userSettings]);
+
+  const saveUserSettings = async () => {
+    if (!user) return;
+
+    try {
+      const settingsToSave = Object.entries(userSettings).map(([key, value]) => ({
+        user_id: user.id,
+        setting_key: key,
+        setting_value: String(value),
+        updated_at: new Date().toISOString()
+      }));
+
+      // Upsert settings
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert(settingsToSave, {
+          onConflict: 'user_id,setting_key'
+        });
+
+      if (error) throw error;
+
+      alert('Configuraciones guardadas correctamente');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Error al guardar las configuraciones');
+    }
+  };
+
+  const updateSetting = (key: string, value: any) => {
+    setUserSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
   useEffect(() => {
     if (user) {
       loadUserStats();
       loadRecentActivity();
       loadUserAddresses();
       loadUserOrders();
+      loadUserSettings();
       // Refresh profile data to ensure we have latest info
       refreshProfile();
     }
-  }, [user, loadUserStats, loadRecentActivity, loadUserAddresses, loadUserOrders, refreshProfile]);
+  }, [user, loadUserStats, loadRecentActivity, loadUserAddresses, loadUserOrders, loadUserSettings, refreshProfile]);
 
   const handleAvatarUpdate = (newAvatarUrl: string) => {
     refreshProfile();
@@ -351,6 +455,7 @@ export default function ProfilePage() {
             <div className="flex flex-wrap gap-4">
               {[
                 { key: 'overview', label: 'Resumen', icon: FiUser },
+                { key: 'activity', label: 'Actividad', icon: FiCalendar },
                 { key: 'orders', label: 'Mis Órdenes', icon: FiShoppingBag },
                 { key: 'wishlist', label: 'Lista de Deseos', icon: FiHeart },
                 { key: 'addresses', label: 'Direcciones', icon: FiMapPin },
@@ -374,6 +479,59 @@ export default function ProfilePage() {
 
           {/* Tab Content */}
           <div className="space-y-6">
+            {activeTab === 'activity' && (
+              <div className="space-y-6">
+                {/* Activity Header */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-white mb-6">Actividad Reciente</h3>
+                  <div className="space-y-4">
+                    {recentActivity.length === 0 ? (
+                      <p className="text-gray-400 text-center py-8">No hay actividad reciente para mostrar</p>
+                    ) : (
+                      recentActivity.map((activity: any) => (
+                        <div key={activity.id} className="flex items-start space-x-3 p-4 bg-gray-700/50 rounded-lg">
+                          <div className="w-10 h-10 bg-primary-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <FiCalendar className="w-5 h-5 text-primary-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-white text-sm font-medium">{activity.description}</p>
+                            <p className="text-gray-400 text-xs mt-1">
+                              {activity.created_at ? new Date(activity.created_at).toLocaleString('es-ES', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              }) : 'Fecha no disponible'}
+                            </p>
+                            <span className="inline-block mt-2 px-2 py-1 bg-gray-600/50 text-gray-300 text-xs rounded">
+                              {activity.activity_type || 'Actividad'}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Activity Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 text-center">
+                    <div className="text-2xl font-bold text-primary-400 mb-2">{stats.ordersCount}</div>
+                    <div className="text-gray-400 text-sm">Compras realizadas</div>
+                  </div>
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 text-center">
+                    <div className="text-2xl font-bold text-green-400 mb-2">{stats.wishlistCount}</div>
+                    <div className="text-gray-400 text-sm">Artículos deseados</div>
+                  </div>
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 text-center">
+                    <div className="text-2xl font-bold text-blue-400 mb-2">{recentActivity.length}</div>
+                    <div className="text-gray-400 text-sm">Actividades recientes</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'overview' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Personal Information */}
@@ -384,18 +542,18 @@ export default function ProfilePage() {
                       <label className="text-sm text-gray-400">Nombre completo</label>
                       <p className="text-white">
                         {profile?.first_name || profile?.last_name ?
-                          `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() :
-                          'No especificado'
+                          `${profile.first_name || ''} ${profile.last_name || ''}`.trim() :
+                          user?.email?.split('@')[0] || 'Usuario'
                         }
                       </p>
                     </div>
                     <div>
                       <label className="text-sm text-gray-400">Nombre de usuario</label>
-                      <p className="text-white">@{profile?.username || user?.email?.split('@')[0] || 'No establecido'}</p>
+                      <p className="text-white">@{profile?.username || user?.email?.split('@')[0] || 'usuario'}</p>
                     </div>
                     <div>
                       <label className="text-sm text-gray-400">Teléfono</label>
-                      <p className="text-white">{profile?.phone || 'No especificado'}</p>
+                      <p className="text-white">{profile?.phone || 'No registrado'}</p>
                     </div>
                     <div>
                       <label className="text-sm text-gray-400">Ubicación</label>
@@ -420,7 +578,13 @@ export default function ProfilePage() {
                             month: 'long',
                             day: 'numeric'
                           }) :
-                          'Fecha no disponible'
+                          user?.created_at ?
+                            new Date(user.created_at).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            }) :
+                            'Fecha no disponible'
                         }
                       </p>
                     </div>
@@ -611,18 +775,134 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'settings' && (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-                <h3 className="text-xl font-bold text-white mb-6">Configuraciones</h3>
-                <div className="text-center py-12">
-                  <FiSettings className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">Configuraciones de usuario próximamente</p>
-                  <Link
-                    href="/configuraciones"
-                    className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold"
+              <div className="space-y-8">
+                {/* Appearance Settings */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-white mb-6 flex items-center space-x-3">
+                    <FiSun className="w-6 h-6 text-primary-400" />
+                    <span>Apariencia</span>
+                  </h3>
+
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-white font-medium mb-3 block">Tema de la aplicación</label>
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          { value: 'light', label: 'Claro', icon: FiSun },
+                          { value: 'dark', label: 'Oscuro', icon: FiMoon },
+                          { value: 'auto', label: 'Automático', icon: FiMonitor }
+                        ].map((theme) => (
+                          <button
+                            key={theme.value}
+                            onClick={() => updateSetting('theme', theme.value)}
+                            className={`flex items-center justify-center space-x-2 p-3 rounded-lg border transition-colors ${
+                              userSettings.theme === theme.value
+                                ? 'bg-primary-500/20 border-primary-500 text-primary-400'
+                                : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50'
+                            }`}
+                          >
+                            <theme.icon className="w-5 h-5" />
+                            <span className="text-sm font-medium">{theme.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-white font-medium mb-3 block">Idioma</label>
+                      <select
+                        value={userSettings.language}
+                        onChange={(e) => updateSetting('language', e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      >
+                        <option value="es">Español</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notification Settings */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-white mb-6 flex items-center space-x-3">
+                    <FiBell className="w-6 h-6 text-primary-400" />
+                    <span>Notificaciones</span>
+                  </h3>
+
+                  <div className="space-y-4">
+                    {[
+                      { key: 'email_notifications', label: 'Notificaciones por email', desc: 'Recibe actualizaciones importantes por correo' },
+                      { key: 'push_notifications', label: 'Notificaciones push', desc: 'Recibe notificaciones en tiempo real' },
+                      { key: 'order_notifications', label: 'Notificaciones de órdenes', desc: 'Actualizaciones sobre tus compras' },
+                      { key: 'marketing_emails', label: 'Emails de marketing', desc: 'Ofertas especiales y novedades' }
+                    ].map((notif) => (
+                      <div key={notif.key} className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                        <div>
+                          <h4 className="text-white font-medium">{notif.label}</h4>
+                          <p className="text-gray-400 text-sm">{notif.desc}</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={userSettings[notif.key as keyof typeof userSettings] as boolean}
+                            onChange={(e) => updateSetting(notif.key, e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Privacy Settings */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-white mb-6 flex items-center space-x-3">
+                    <FiShield className="w-6 h-6 text-primary-400" />
+                    <span>Privacidad</span>
+                  </h3>
+
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-white font-medium mb-3 block">Visibilidad del perfil</label>
+                      <select
+                        value={userSettings.profile_visibility}
+                        onChange={(e) => updateSetting('profile_visibility', e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      >
+                        <option value="public">Público</option>
+                        <option value="friends">Solo amigos</option>
+                        <option value="private">Privado</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                      <div>
+                        <h4 className="text-white font-medium">Mostrar estado en línea</h4>
+                        <p className="text-gray-400 text-sm">Otros usuarios pueden ver cuando estás activo</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={userSettings.show_online_status}
+                          onChange={(e) => updateSetting('show_online_status', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <div className="flex justify-center">
+                  <button
+                    onClick={saveUserSettings}
+                    className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold"
                   >
-                    <FiSettings className="w-5 h-5" />
-                    <span>Ir a Configuraciones</span>
-                  </Link>
+                    <FiSave className="w-5 h-5" />
+                    <span>Guardar Configuraciones</span>
+                  </button>
                 </div>
               </div>
             )}
