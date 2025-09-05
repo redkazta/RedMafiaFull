@@ -164,7 +164,7 @@ export default function RegistroPage() {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          emailRedirectTo: `https://red-mafia-kiro.vercel.app/auth/confirm`,
           data: {
             username: formData.username,
             first_name: formData.firstName,

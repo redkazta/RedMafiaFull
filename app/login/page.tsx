@@ -114,7 +114,7 @@ export default function LoginPage() {
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`
+          emailRedirectTo: `https://red-mafia-kiro.vercel.app/auth/confirm`
         }
       });
 
@@ -258,7 +258,7 @@ export default function LoginPage() {
                     <input type="checkbox" className="w-4 h-4 text-primary-500 bg-gray-700 border-gray-600 rounded focus:ring-primary-500" />
                     <span className="ml-2 text-sm text-gray-400">Recordarme</span>
                   </label>
-                  <Link href="/forgot-password" className="text-sm text-primary-400 hover:text-primary-300 transition-colors">
+                  <Link href="/recuperar-contrasena" className="text-sm text-primary-400 hover:text-primary-300 transition-colors">
                     ¿Olvidaste tu contraseña?
                   </Link>
                 </div>
