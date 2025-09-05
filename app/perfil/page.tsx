@@ -20,7 +20,14 @@ export default function ProfilePage() {
     profile: !!profile,
     loading,
     userEmail: user?.email,
+    userId: user?.id,
+    profileId: profile?.id,
     profileName: profile?.display_name,
+    firstName: profile?.first_name,
+    lastName: profile?.last_name,
+    phone: profile?.phone,
+    username: profile?.username,
+    createdAt: profile?.created_at,
     tokenBalance
   });
   const [stats, setStats] = useState({
@@ -34,33 +41,54 @@ export default function ProfilePage() {
     description: string;
     created_at: string;
   }>>([]);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Array<{
+    id: string;
+    status: string;
+    total_amount: number;
+    created_at: string;
+    items_count: number;
+  }>>([]);
   const [activeTab, setActiveTab] = useState('overview');
 
   const loadUserStats = useCallback(async () => {
     if (!user) return;
 
     try {
-      // Get orders count
-      const { count: ordersCount } = await supabase
-        .from('purchase_orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+      // Get orders count (try multiple table names)
+      let ordersCount = 0;
+      try {
+        const { count } = await supabase
+          .from('purchase_orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        ordersCount = count || 0;
+      } catch (error) {
+        console.log('purchase_orders table not available, trying orders...');
+        try {
+          // orders table doesn't exist, skip
+          ordersCount = 0;
+        } catch (error2) {
+          console.log('orders table not available either');
+          ordersCount = 0;
+        }
+      }
 
-      // Get wishlist count (skip for now since table doesn't exist)
-      const wishlistCount = 0;
+      // Get wishlist count from cart provider
+      const wishlistCount = wishlist.length;
 
-      // Get reviews count (skip for now since table doesn't exist)
+      // Get reviews count (placeholder for now)
       const reviewsCount = 0;
 
       setStats({
-        ordersCount: ordersCount || 0,
-        wishlistCount: wishlistCount || 0,
-        reviewsCount: reviewsCount || 0
+        ordersCount: ordersCount,
+        wishlistCount: wishlistCount,
+        reviewsCount: reviewsCount
       });
     } catch (error) {
       console.error('Error loading user stats:', error);
     }
-  }, [user]);
+  }, [user, wishlist]);
 
   const loadRecentActivity = useCallback(async () => {
     if (!user) return;
@@ -75,7 +103,7 @@ export default function ProfilePage() {
           created_at: new Date().toISOString()
         },
         {
-          id: '2', 
+          id: '2',
           activity_type: 'login',
           description: 'Inicio de sesión',
           created_at: new Date(Date.now() - 86400000).toISOString()
@@ -86,12 +114,72 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  const loadUserAddresses = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_addresses')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (!error && data) {
+        setAddresses(data);
+      } else {
+        console.log('No addresses found or error:', error);
+        setAddresses([]);
+      }
+    } catch (error) {
+      console.error('Error loading user addresses:', error);
+      setAddresses([]);
+    }
+  }, [user]);
+
+  const loadUserOrders = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      // Try to load orders from possible table names
+      let ordersData: any[] = [];
+
+      try {
+        const { data, error } = await supabase
+          .from('purchase_orders')
+          .select('id, status, total_amount, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (!error && data) {
+          ordersData = data.map((order: any) => ({
+            ...order,
+            items_count: 0 // Placeholder, would need order_items table
+          }));
+        }
+              } catch (error) {
+          console.log('purchase_orders table not available');
+        }
+
+      setOrders(ordersData);
+    } catch (error) {
+      console.error('Error loading user orders:', error);
+      setOrders([]);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user) {
       loadUserStats();
       loadRecentActivity();
+      loadUserAddresses();
+      loadUserOrders();
+      // Refresh profile data to ensure we have latest info
+      refreshProfile();
     }
-  }, [user, loadUserStats, loadRecentActivity]);
+  }, [user, loadUserStats, loadRecentActivity, loadUserAddresses, loadUserOrders, refreshProfile]);
 
   const handleAvatarUpdate = (newAvatarUrl: string) => {
     refreshProfile();
@@ -388,17 +476,66 @@ export default function ProfilePage() {
             {activeTab === 'orders' && (
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
                 <h3 className="text-xl font-bold text-white mb-6">Mis Órdenes</h3>
-                <div className="text-center py-12">
-                  <FiShoppingBag className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">No tienes órdenes realizadas aún</p>
-                  <Link
-                    href="/tienda"
-                    className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold"
-                  >
-                    <FiShoppingBag className="w-5 h-5" />
-                    <span>Ir a la Tienda</span>
-                  </Link>
-                </div>
+
+                {orders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FiShoppingBag className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400 mb-4">No tienes órdenes realizadas aún</p>
+                    <p className="text-sm text-gray-500 mb-6">Tus futuras compras aparecerán aquí</p>
+                    <Link
+                      href="/tienda"
+                      className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold"
+                    >
+                      <FiShoppingBag className="w-5 h-5" />
+                      <span>Ir a la Tienda</span>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map((order) => (
+                      <div key={order.id} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <div className="text-white font-medium">
+                              Orden #{order.id.slice(-8)}
+                            </div>
+                            <div className="text-gray-400 text-sm">
+                              {new Date(order.created_at).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-white font-bold">
+                              ${order.total_amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                            </div>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              order.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                              order.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                              order.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
+                              'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {order.status === 'completed' ? 'Completada' :
+                               order.status === 'pending' ? 'Pendiente' :
+                               order.status === 'cancelled' ? 'Cancelada' : order.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <div className="text-gray-400 text-sm">
+                            {order.items_count || 0} artículo{order.items_count !== 1 ? 's' : ''}
+                          </div>
+                          <button className="text-primary-400 hover:text-primary-300 text-sm font-medium transition-colors">
+                            Ver detalles →
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -440,15 +577,56 @@ export default function ProfilePage() {
 
             {activeTab === 'addresses' && (
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-                <h3 className="text-xl font-bold text-white mb-6">Mis Direcciones</h3>
-                <div className="text-center py-12">
-                  <FiMapPin className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">No tienes direcciones guardadas</p>
-                  <button className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold">
-                    <FiMapPin className="w-5 h-5" />
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-white">Mis Direcciones</h3>
+                  <button className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold text-sm">
+                    <FiMapPin className="w-4 h-4" />
                     <span>Agregar Dirección</span>
                   </button>
                 </div>
+
+                {addresses.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FiMapPin className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400 mb-4">No tienes direcciones guardadas</p>
+                    <p className="text-sm text-gray-500">Agrega tu primera dirección para facilitar tus compras</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {addresses.map((address) => (
+                      <div key={address.id} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                        <div className="flex justify-between items-start mb-2">
+                                                  <div className="flex items-center space-x-2">
+                          <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
+                            Dirección
+                          </span>
+                          {address.is_default && (
+                            <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs font-medium">
+                              Predeterminada
+                            </span>
+                          )}
+                        </div>
+                          <button className="text-gray-400 hover:text-white transition-colors">
+                            <FiEdit className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="text-white font-medium mb-1">
+                          {address.recipient_name || 'Dirección'}
+                        </div>
+                        <div className="text-gray-300 text-sm">
+                          {address.address_line_1 || address.address_line_2 || 'Sin dirección específica'}
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                          {address.city && address.state ?
+                            `${address.city}, ${address.state}${address.postal_code ? ` ${address.postal_code}` : ''}` :
+                            'Ubicación no especificada'
+                          }
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

@@ -196,6 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           username: user.user_metadata?.username || user.email?.split('@')[0] || '',
           first_name: user.user_metadata?.first_name || '',
           last_name: user.user_metadata?.last_name || '',
+          phone: user.user_metadata?.phone || '',
           display_name: user.user_metadata?.display_name || `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim(),
           is_verified: !!user.email_confirmed_at,
           is_active: true
