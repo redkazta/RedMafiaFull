@@ -113,7 +113,7 @@ export function HeroSection() {
               <img
                 src="/redmafialogo.png"
                 alt="LA RED MAFIA"
-                className="h-24 md:h-32 lg:h-40 w-auto object-contain"
+                className="h-32 md:h-40 lg:h-52 w-auto object-contain"
                 style={{
                   filter: 'drop-shadow(0 0 30px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 60px rgba(239, 68, 68, 0.4)) drop-shadow(0 0 90px rgba(239, 68, 68, 0.2))'
                 }}
@@ -141,24 +141,6 @@ export function HeroSection() {
             />
           </motion.div>
 
-          {/* Subtitle with Glow */}
-          <motion.p
-            className="text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            style={{
-              textShadow: '0 0 20px rgba(255, 255, 255, 0.3)'
-            }}
-          >
-            <span className="bg-gradient-to-r from-gray-100 via-white to-gray-100 bg-clip-text text-transparent">
-              La plataforma musical más épica de Guadalajara.
-            </span>
-            <br />
-            <span className="text-gray-300">
-              Conecta con artistas, descubre música única y vive eventos inolvidables.
-            </span>
-          </motion.p>
 
           {/* CTA Buttons with Neon Effects */}
           <motion.div
@@ -172,7 +154,7 @@ export function HeroSection() {
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href="/music"
+                href="/musica"
                 className="relative group text-lg px-10 py-5 flex items-center space-x-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-full font-semibold overflow-hidden transition-all duration-300"
                 style={{
                   boxShadow: '0 0 30px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
@@ -190,7 +172,7 @@ export function HeroSection() {
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href="/auth/register"
+                href="/registro"
                 className="relative group text-lg px-10 py-5 bg-transparent border-2 border-primary-500 text-primary-400 rounded-full font-semibold hover:bg-primary-500/10 transition-all duration-300"
                 style={{
                   boxShadow: '0 0 20px rgba(239, 68, 68, 0.3)'

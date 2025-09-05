@@ -150,6 +150,13 @@ function UserPanel() {
     setHoverTimeout(timeout);
   };
 
+  // Reset hover state when panel is closed
+  useEffect(() => {
+    if (!isUserPanelOpen) {
+      setIsHovered(false);
+    }
+  }, [isUserPanelOpen]);
+
   // Force render after 3 seconds if still loading
   useEffect(() => {
     if (loading) {
@@ -454,7 +461,6 @@ function UserPanel() {
           <div className="w-8 h-8 bg-gradient-to-r from-gray-500 to-gray-600 rounded-full flex items-center justify-center">
             <FiUser className="w-4 h-4 text-white" />
           </div>
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-gray-900 animate-pulse"></div>
         </div>
         <div className="hidden md:block text-left">
           <div className="text-sm font-medium text-white">
