@@ -63,7 +63,7 @@ export default function TiendaPage() {
       }
 
       // Get all unique category IDs
-      const categoryIds = [...new Set(productsData.map(p => p.category_id).filter(id => id !== null))];
+      const categoryIds = Array.from(new Set(productsData.map(p => p.category_id).filter(id => id !== null)));
 
       // Get category data for all products
       let categoriesMap = new Map();
@@ -114,9 +114,9 @@ export default function TiendaPage() {
     { key: 'all', label: 'Todo', icon: FiShoppingCart },
         { key: 'featured', label: 'Destacados', icon: FiTrendingUp },
         ...data.map(cat => ({
-          key: cat.slug,
+          key: cat.name.toLowerCase().replace(/\s+/g, '-'),
           label: cat.name,
-          icon: cat.slug === 'ropa' ? FiTag : FiStar
+          icon: cat.name.toLowerCase().includes('ropa') ? FiTag : FiStar
         }))
       ];
 
@@ -128,7 +128,7 @@ export default function TiendaPage() {
 
   const handleAddToCart = async (product: Product) => {
     try {
-                  setAnimatingProduct(product.id);
+                  setAnimatingProduct(product.id.toString());
 
               await addToCart({
       product_id: product.id,
@@ -152,8 +152,8 @@ export default function TiendaPage() {
 
   const handleToggleWishlist = async (product: Product) => {
     try {
-    if (isInWishlist(product.id.toString())) {
-        await removeFromWishlist(product.id.toString());
+    if (isInWishlist(product.id)) {
+        await removeFromWishlist(product.id);
         toast.success('Removido de la wishlist', {
           icon: '💔',
           duration: 2000,
