@@ -102,24 +102,35 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="max-w-4xl mx-auto"
         >
-          {/* Main Title with Neon Effect */}
-          <motion.h1
-            className="text-6xl md:text-8xl font-display font-black text-white mb-8 relative"
+          {/* Main Logo with Neon Effect */}
+          <motion.div
+            className="mb-8 relative flex justify-center"
             initial={{ opacity: 0, y: 30, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1, delay: 0.2, type: "spring", stiffness: 100 }}
           >
-            <span 
-              className="relative bg-gradient-to-r from-primary-300 via-primary-500 to-accent-400 bg-clip-text text-transparent"
-              style={{
-                textShadow: '0 0 30px rgba(239, 68, 68, 0.8), 0 0 60px rgba(239, 68, 68, 0.4), 0 0 90px rgba(239, 68, 68, 0.2)',
-                filter: 'drop-shadow(0 0 20px rgba(239, 68, 68, 0.8))'
-              }}
-            >
-              LA RED MAFIA
-            </span>
+            <div className="relative">
+              <img
+                src="/redmafialogo.png"
+                alt="LA RED MAFIA"
+                className="h-24 md:h-32 lg:h-40 w-auto object-contain"
+                style={{
+                  filter: 'drop-shadow(0 0 30px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 60px rgba(239, 68, 68, 0.4)) drop-shadow(0 0 90px rgba(239, 68, 68, 0.2))'
+                }}
+              />
+              {/* Glowing border effect */}
+              <div
+                className="absolute inset-0 rounded-lg"
+                style={{
+                  background: 'linear-gradient(45deg, rgba(239, 68, 68, 0.3), rgba(249, 115, 22, 0.3))',
+                  filter: 'blur(20px)',
+                  transform: 'scale(1.1)',
+                  zIndex: -1
+                }}
+              />
+            </div>
             {/* Glowing underline */}
-            <motion.div 
+            <motion.div
               className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent"
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
@@ -128,7 +139,7 @@ export function HeroSection() {
                 boxShadow: '0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.4)'
               }}
             />
-          </motion.h1>
+          </motion.div>
 
           {/* Subtitle with Glow */}
           <motion.p
