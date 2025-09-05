@@ -246,7 +246,7 @@ export default function ProductPage() {
                 productPrice={product.price_tokens}
                 productImage={product.image_url || '📦'}
                 productCategory={product.product_categories?.name || 'Sin categoría'}
-                stockQuantity={product.stock_quantity}
+                stockQuantity={product.stock_quantity ?? undefined}
                 className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
               />
 
