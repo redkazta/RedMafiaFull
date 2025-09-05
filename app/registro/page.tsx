@@ -23,6 +23,15 @@ export default function RegistroPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({
+    minLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumbers: false,
+    hasNonalphas: false,
+    isValid: false
+  });
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, size: number}>>([]);
   const router = useRouter();
   
@@ -37,29 +46,97 @@ export default function RegistroPage() {
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+
+    // Actualizar fortaleza de contraseña en tiempo real
+    if (name === 'password') {
+      setPasswordStrength(validatePassword(value));
+    }
+  };
+
+  // Validaciones con regex
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    const minLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasNonalphas = /\W/.test(password);
+
+    return {
+      minLength,
+      hasUpperCase,
+      hasLowerCase,
+      hasNumbers,
+      hasNonalphas,
+      isValid: minLength && hasUpperCase && hasLowerCase && hasNumbers && hasNonalphas
+    };
+  };
+
+  const validateUsername = (username: string) => {
+    const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+    return usernameRegex.test(username);
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+    return phoneRegex.test(phone);
   };
 
   const validateForm = () => {
+    // Validar email
+    if (!validateEmail(formData.email)) {
+      setError('El formato del email no es válido');
+      return false;
+    }
+
+    // Validar username
+    if (!validateUsername(formData.username)) {
+      setError('El nombre de usuario debe tener entre 3-20 caracteres, solo letras, números, guiones y guiones bajos');
+      return false;
+    }
+
+    // Validar teléfono
+    if (!validatePhone(formData.phone)) {
+      setError('El formato del teléfono no es válido');
+      return false;
+    }
+
+    // Validar contraseña
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      const missing = [];
+      if (!passwordValidation.minLength) missing.push('al menos 8 caracteres');
+      if (!passwordValidation.hasUpperCase) missing.push('una letra mayúscula');
+      if (!passwordValidation.hasLowerCase) missing.push('una letra minúscula');
+      if (!passwordValidation.hasNumbers) missing.push('un número');
+      if (!passwordValidation.hasNonalphas) missing.push('un carácter especial');
+
+      setError(`La contraseña debe contener: ${missing.join(', ')}`);
+      return false;
+    }
+
+    // Validar confirmación de contraseña
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
       return false;
     }
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+
+    // Validar términos
+    if (!acceptTerms) {
+      setError('Debes aceptar los términos y condiciones para continuar');
       return false;
     }
-    if (!formData.username.trim()) {
-      setError('El nombre de usuario es requerido');
-      return false;
-    }
-    if (!formData.phone.trim()) {
-      setError('El número de teléfono es requerido');
-      return false;
-    }
+
+    // Validar campos requeridos
     if (!formData.firstName.trim()) {
       setError('El nombre es requerido');
       return false;
@@ -68,6 +145,7 @@ export default function RegistroPage() {
       setError('El apellido es requerido');
       return false;
     }
+
     return true;
   };
 
@@ -388,6 +466,40 @@ export default function RegistroPage() {
                       {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
                     </button>
                   </div>
+
+                  {/* Password Strength Indicator */}
+                  {formData.password && (
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${passwordStrength.isValid ? 'bg-green-500' : passwordStrength.minLength ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+                        <span className={`text-xs ${passwordStrength.isValid ? 'text-green-400' : passwordStrength.minLength ? 'text-yellow-400' : 'text-red-400'}`}>
+                          {passwordStrength.isValid ? 'Contraseña segura' : passwordStrength.minLength ? 'Contraseña aceptable' : 'Contraseña débil'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 text-xs">
+                        <div className={`flex items-center space-x-1 ${passwordStrength.minLength ? 'text-green-400' : 'text-gray-500'}`}>
+                          <FiCheck className="w-3 h-3" />
+                          <span>8+ caracteres</span>
+                        </div>
+                        <div className={`flex items-center space-x-1 ${passwordStrength.hasUpperCase ? 'text-green-400' : 'text-gray-500'}`}>
+                          <FiCheck className="w-3 h-3" />
+                          <span>Mayúscula</span>
+                        </div>
+                        <div className={`flex items-center space-x-1 ${passwordStrength.hasLowerCase ? 'text-green-400' : 'text-gray-500'}`}>
+                          <FiCheck className="w-3 h-3" />
+                          <span>Minúscula</span>
+                        </div>
+                        <div className={`flex items-center space-x-1 ${passwordStrength.hasNumbers ? 'text-green-400' : 'text-gray-500'}`}>
+                          <FiCheck className="w-3 h-3" />
+                          <span>Número</span>
+                        </div>
+                        <div className={`flex items-center space-x-1 ${passwordStrength.hasNonalphas ? 'text-green-400' : 'text-gray-500'}`}>
+                          <FiCheck className="w-3 h-3" />
+                          <span>Especial</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Confirm Password Field */}
@@ -418,7 +530,12 @@ export default function RegistroPage() {
 
                 {/* Terms */}
                 <div className="flex items-start">
-                  <input type="checkbox" required className="w-4 h-4 text-primary-500 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 mt-1" />
+                  <input
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="w-4 h-4 text-primary-500 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 mt-1"
+                  />
                   <span className="ml-2 text-sm text-gray-400">
                     Acepto los{' '}
                     <Link href="/terminos" className="text-primary-400 hover:text-primary-300 transition-colors">
