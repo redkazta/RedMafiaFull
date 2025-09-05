@@ -35,7 +35,7 @@ export default function LoginPage() {
     setShowResendButton(false); // Reset resend button state
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -92,6 +92,16 @@ export default function LoginPage() {
             }
         }
       } else {
+        // Verificar que el usuario esté confirmado antes de permitir acceso
+        if (data.user && !data.user.email_confirmed_at) {
+          setError('⚠️ Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada (incluyendo la carpeta de spam) y haz clic en el enlace de confirmación.');
+          setShowResendButton(true);
+
+          // Cerrar sesión si no está confirmado
+          await supabase.auth.signOut();
+          return;
+        }
+
         router.push('/dashboard');
       }
     } catch (err) {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
-import { FiEdit, FiSettings, FiShoppingBag, FiMapPin, FiArrowLeft, FiCalendar, FiMail, FiUser, FiGlobe, FiHeart, FiLogIn } from 'react-icons/fi';
+import { FiEdit, FiSettings, FiShoppingBag, FiMapPin, FiArrowLeft, FiCalendar, FiMail, FiUser, FiGlobe, FiHeart, FiLogIn, FiPhone } from 'react-icons/fi';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useCart, WishlistItem } from '@/components/providers/CartProvider';
 import { supabase } from '@/lib/supabase';
@@ -97,6 +97,11 @@ export default function ProfilePage() {
     refreshProfile();
   };
 
+  // Función para forzar recarga del perfil
+  const handleRefreshProfile = () => {
+    window.location.reload();
+  };
+
   // Mostrar loading por máximo 3 segundos
   const [showLoading, setShowLoading] = useState(true);
 
@@ -150,8 +155,8 @@ export default function ProfilePage() {
     );
   }
 
-  // Si hay usuario pero no perfil, mostrar mensaje de carga
-  if (user && !profile) {
+  // Si hay usuario pero no perfil, intentar crear perfil o mostrar opciones
+  if (user && !profile && !loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -160,11 +165,19 @@ export default function ProfilePage() {
             <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
               <FiUser className="w-12 h-12 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">Configurando tu perfil...</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Completando tu perfil...</h2>
             <p className="text-gray-400 mb-6">
-              Estamos preparando tu información personal por primera vez
+              Estamos configurando tu información personal. Esto puede tomar unos segundos.
             </p>
-            <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+            <div className="space-y-4">
+              <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Reintentar
+              </button>
+            </div>
           </div>
         </main>
         <Footer />
@@ -187,7 +200,7 @@ export default function ProfilePage() {
       <main className="flex-1 py-20 relative z-10">
         <div className="container mx-auto px-4">
           {/* Back Button */}
-          <div className="mb-8">
+          <div className="mb-8 flex justify-between items-center">
             <Link
               href="/"
               className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
@@ -195,6 +208,13 @@ export default function ProfilePage() {
               <FiArrowLeft className="w-5 h-5" />
               <span>Volver al inicio</span>
             </Link>
+            <button
+              onClick={handleRefreshProfile}
+              className="inline-flex items-center space-x-2 px-4 py-2 text-gray-400 hover:text-white transition-colors border border-gray-600 rounded-lg hover:border-gray-500"
+            >
+              <FiSettings className="w-4 h-4" />
+              <span>Refrescar</span>
+            </button>
           </div>
 
           {/* Profile Header */}
@@ -214,12 +234,18 @@ export default function ProfilePage() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
                   <div>
                     <h1 className="text-3xl font-bold text-white mb-2">
-                      {profile?.display_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Usuario'}
+                      {profile?.display_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user?.email?.split('@')[0] || 'Usuario'}
                     </h1>
                     <p className="text-gray-400 flex items-center justify-center md:justify-start space-x-2">
                       <FiMail className="w-4 h-4" />
                       <span>{profile?.email || user?.email}</span>
                     </p>
+                    {profile?.phone && (
+                      <p className="text-gray-400 flex items-center justify-center md:justify-start space-x-2 mt-1">
+                        <FiPhone className="w-4 h-4" />
+                        <span>{profile.phone}</span>
+                      </p>
+                    )}
                     {profile?.bio && (
                       <p className="text-gray-300 mt-2">{profile.bio}</p>
                     )}
@@ -288,11 +314,20 @@ export default function ProfilePage() {
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm text-gray-400">Nombre completo</label>
-                      <p className="text-white">{profile?.first_name || ''} {profile?.last_name || ''}</p>
+                      <p className="text-white">
+                        {profile?.first_name || profile?.last_name ?
+                          `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() :
+                          'No especificado'
+                        }
+                      </p>
                     </div>
                     <div>
                       <label className="text-sm text-gray-400">Nombre de usuario</label>
-                      <p className="text-white">@{profile?.username || 'No establecido'}</p>
+                      <p className="text-white">@{profile?.username || user?.email?.split('@')[0] || 'No establecido'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-400">Teléfono</label>
+                      <p className="text-white">{profile?.phone || 'No especificado'}</p>
                     </div>
                     <div>
                       <label className="text-sm text-gray-400">Ubicación</label>
@@ -310,7 +345,16 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <label className="text-sm text-gray-400">Miembro desde</label>
-                      <p className="text-white">{profile?.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES') : 'Fecha no disponible'}</p>
+                      <p className="text-white">
+                        {profile?.created_at ?
+                          new Date(profile.created_at).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          }) :
+                          'Fecha no disponible'
+                        }
+                      </p>
                     </div>
                   </div>
                 </div>
