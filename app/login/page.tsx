@@ -196,12 +196,13 @@ export default function LoginPage() {
               {error && (
                 <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
                   <p className="text-red-400 text-sm">{error}</p>
-                  {(error.includes('confirmado') || error.includes('confirmed')) && (
+                  {(error.includes('confirmado') || error.includes('confirmed') || error.includes('confirmación') || error.includes('verification')) && (
                     <button
                       onClick={handleResendConfirmation}
-                      className="mt-2 text-primary-400 hover:text-primary-300 text-sm underline"
+                      disabled={loading}
+                      className="mt-3 w-full bg-primary-600/20 hover:bg-primary-600/30 border border-primary-500/50 text-primary-400 hover:text-primary-300 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Reenviar email de confirmación
+                      {loading ? 'Enviando...' : '📧 Reenviar email de confirmación'}
                     </button>
                   )}
                 </div>
@@ -291,6 +292,22 @@ export default function LoginPage() {
                   {loading ? 'Conectando...' : 'Continuar con Google'}
                 </button>
               </div>
+
+              {/* Resend Confirmation Section */}
+              {email && (
+                <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <p className="text-blue-400 text-sm mb-3">
+                    ¿No recibiste el email de confirmación?
+                  </p>
+                  <button
+                    onClick={handleResendConfirmation}
+                    disabled={loading}
+                    className="w-full bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-400 hover:text-blue-300 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Enviando...' : '📧 Reenviar email de confirmación'}
+                  </button>
+                </div>
+              )}
 
               {/* Register Link */}
               <div className="mt-8 text-center">

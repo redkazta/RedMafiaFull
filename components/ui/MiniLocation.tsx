@@ -45,7 +45,7 @@ export function MiniLocation() {
     const timeout = setTimeout(() => {
       setIsOpen(false);
       setIsHovered(false);
-    }, 150); // Small delay to prevent flickering
+    }, 300); // Consistent with MiniCart and MiniWishlist
     setHoverTimeout(timeout);
   };
 
