@@ -14,22 +14,6 @@ export default function ProfilePage() {
   const { user, profile, settings, tokenBalance, refreshProfile, loading } = useAuth();
   const { wishlist } = useCart();
 
-  // Debug: Mostrar estado del perfil
-  console.log('Profile Page Debug:', {
-    user: !!user,
-    profile: !!profile,
-    loading,
-    userEmail: user?.email,
-    userId: user?.id,
-    profileId: profile?.id,
-    profileName: profile?.display_name,
-    firstName: profile?.first_name,
-    lastName: profile?.last_name,
-    phone: profile?.phone,
-    username: profile?.username,
-    createdAt: profile?.created_at,
-    tokenBalance
-  });
   const [stats, setStats] = useState({
     ordersCount: 0,
     wishlistCount: 0,
@@ -190,18 +174,17 @@ export default function ProfilePage() {
     window.location.reload();
   };
 
-  // Mostrar loading por máximo 3 segundos
-  const [showLoading, setShowLoading] = useState(true);
+  // Estado para controlar la carga inicial
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoading(false);
-    }, 3000);
+    if (user && profile && !loading && !initialLoadComplete) {
+      // Una vez que tenemos usuario, perfil y no estamos cargando, marcar como carga inicial completa
+      setInitialLoadComplete(true);
+    }
+  }, [user, profile, loading, initialLoadComplete]);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading && showLoading) {
+  if (loading && !initialLoadComplete) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -243,8 +226,8 @@ export default function ProfilePage() {
     );
   }
 
-  // Si hay usuario pero no perfil, intentar crear perfil o mostrar opciones
-  if (user && !profile && !loading) {
+  // Si hay usuario pero no perfil después de la carga inicial, mostrar mensaje de completar perfil
+  if (user && !profile && initialLoadComplete) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -307,7 +290,7 @@ export default function ProfilePage() {
 
           {/* Profile Header */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700 mb-8">
-            <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+            <div className="flex flex-col items-center space-y-6">
               {/* Avatar */}
               <div className="flex-shrink-0">
                 <AvatarUpload
@@ -318,48 +301,45 @@ export default function ProfilePage() {
               </div>
 
               {/* Profile Info */}
-              <div className="flex-1 text-center md:text-left">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                  <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">
-                      {profile?.display_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user?.email?.split('@')[0] || 'Usuario'}
-                    </h1>
-                    <p className="text-gray-400 flex items-center justify-center md:justify-start space-x-2">
-                      <FiMail className="w-4 h-4" />
-                      <span>{profile?.email || user?.email}</span>
-                    </p>
-                    {profile?.phone && (
-                      <p className="text-gray-400 flex items-center justify-center md:justify-start space-x-2 mt-1">
-                        <FiPhone className="w-4 h-4" />
-                        <span>{profile.phone}</span>
-                      </p>
-                    )}
-                    {profile?.bio && (
-                      <p className="text-gray-300 mt-2">{profile.bio}</p>
-                    )}
-                  </div>
+              <div className="text-center">
+                <h1 className="text-3xl font-bold text-white mb-2">
+                  {profile?.display_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user?.email?.split('@')[0] || 'Usuario'}
+                </h1>
+                <p className="text-gray-400 flex items-center justify-center space-x-2 mb-2">
+                  <FiMail className="w-4 h-4" />
+                  <span>{profile?.email || user?.email}</span>
+                </p>
+                {profile?.phone && (
+                  <p className="text-gray-400 flex items-center justify-center space-x-2 mb-2">
+                    <FiPhone className="w-4 h-4" />
+                    <span>{profile.phone}</span>
+                  </p>
+                )}
+                {profile?.bio && (
+                  <p className="text-gray-300 mt-2 mb-4">{profile.bio}</p>
+                )}
 
-                  <div className="flex items-center space-x-4 mt-4 md:mt-0">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary-400">{(tokenBalance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
-                      <div className="text-sm text-gray-400">Tokens</div>
-                    </div>
-                  </div>
+                {/* Tokens */}
+                <div className="mb-6">
+                  <div className="text-2xl font-bold text-primary-400">{(tokenBalance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+                  <div className="text-sm text-gray-400">Tokens</div>
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-4 mt-6">
-                  <div className="text-center">
-                    <div className="text-xl font-bold text-white">{stats.ordersCount ?? 0}</div>
-                    <div className="text-sm text-gray-400">Órdenes</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xl font-bold text-white">{stats.wishlistCount ?? 0}</div>
-                    <div className="text-sm text-gray-400">Favoritos</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xl font-bold text-white">{stats.reviewsCount ?? 0}</div>
-                    <div className="text-sm text-gray-400">Reseñas</div>
+                <div className="flex justify-center mt-6">
+                  <div className="flex items-center space-x-8">
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-white">{stats.ordersCount ?? 0}</div>
+                      <div className="text-sm text-gray-400">Órdenes</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-white">{stats.wishlistCount ?? 0}</div>
+                      <div className="text-sm text-gray-400">Favoritos</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-white">{stats.reviewsCount ?? 0}</div>
+                      <div className="text-sm text-gray-400">Reseñas</div>
+                    </div>
                   </div>
                 </div>
               </div>
