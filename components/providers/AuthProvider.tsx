@@ -6,15 +6,15 @@ import { supabase } from '@/lib/supabase';
 
 interface Profile {
   id: string;
-  email: string;
+  email?: string;
   username?: string | null;
-  first_name?: string;
-  last_name?: string;
+  first_name?: string | null;
+  last_name?: string | null;
   display_name?: string | null;
   bio?: string | null;
   avatar_url?: string | null;
-  is_verified?: boolean;
-  is_active?: boolean;
+  is_verified?: boolean | null;
+  is_active?: boolean | null;
   date_of_birth?: string | null;
   location?: string | null;
   phone?: string | null;
@@ -22,8 +22,8 @@ interface Profile {
   preferences?: any;
   social_links?: any;
   last_login_at?: string | null;
-  created_at?: string;
-  updated_at?: string;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 interface UserSettings {
@@ -45,14 +45,14 @@ interface UserSettings {
 }
 
 interface UserTokens {
-  id: string;
-  user_id: string;
-  current_balance: number;
-  total_earned: number;
-  total_spent: number;
+  id: number;
+  user_id: string | null;
+  current_balance: number | null;
+  total_earned: number | null;
+  total_spent: number | null;
   last_transaction_at?: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 interface AuthContextType {
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single();
@@ -189,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Create profile
       const { data: profileData, error: profileError } = await supabase
-        .from('users')
+        .from('user_profiles')
         .insert({
           id: user.id,
           email: user.email || '',
