@@ -183,16 +183,24 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
     );
   }
 
-  // Simplified logic: always show something useful
+  // Improved logic: handle all authentication states properly
   console.log('🎯 UserPanel Render Decision:', {
     hasUser: !!user,
     hasProfile: !!profile,
+    hasSession: !!session,
     isLoading: loading,
     forceRender,
-    decision: user && profile ? 'authenticated' : user ? 'partial' : 'not-authenticated'
+    userId: user?.id,
+    profileId: profile?.id,
+    userEmail: user?.email,
+    sessionUserId: session?.user?.id,
+    decision: user && profile ? 'authenticated' : user ? 'partial-auth' : 'not-authenticated'
   });
 
-  if (user && profile) {
+  // Check if user is authenticated (has session and user object)
+  const isAuthenticated = !!user && !!session;
+
+  if (isAuthenticated && profile) {
     // Authenticated user with complete profile
     return (
       <div className="relative">
@@ -353,7 +361,7 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
     );
   }
 
-  if (user && !profile) {
+  if (isAuthenticated && !profile) {
     // Authenticated user but profile incomplete
     return (
       <div className="relative">
@@ -449,7 +457,7 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
     );
   }
 
-  // Non-authenticated user - Dropdown with hover
+  // Non-authenticated user - Login prompt with hover
   return (
     <div className="relative">
       <button

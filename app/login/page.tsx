@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showResendButton, setShowResendButton] = useState(false);
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, size: number}>>([]);
   const router = useRouter();
   
@@ -31,6 +32,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setShowResendButton(false); // Reset resend button state
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -42,10 +44,33 @@ export default function LoginPage() {
         // Provide user-friendly error messages
         switch (error.message) {
           case 'Invalid login credentials':
-            setError('Email o contraseña incorrectos. Si acabas de registrarte, asegúrate de haber confirmado tu email primero.');
+            // Check if user exists but email not confirmed
+            try {
+              const { data, error: userCheckError } = await supabase
+                .from('user_profiles')
+                .select('id, email')
+                .eq('email', email)
+                .single();
+
+              if (data && !userCheckError) {
+                // User exists, check if email is confirmed
+                const { data: authUser } = await supabase.auth.getUser();
+                if (authUser.user && !authUser.user.email_confirmed_at) {
+                  setError('⚠️ Tu email no está confirmado. Revisa tu bandeja de entrada y confirma tu email antes de iniciar sesión.');
+                  setShowResendButton(true);
+                } else {
+                  setError('Email o contraseña incorrectos.');
+                }
+              } else {
+                setError('Email o contraseña incorrectos.');
+              }
+            } catch (checkError) {
+              setError('Email o contraseña incorrectos.');
+            }
             break;
           case 'Email not confirmed':
             setError('⚠️ Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada (incluyendo la carpeta de spam) y haz clic en el enlace de confirmación.');
+            setShowResendButton(true);
             break;
           case 'Too many requests':
             setError('Demasiados intentos de inicio de sesión. Espera unos minutos antes de intentar de nuevo.');
@@ -55,11 +80,13 @@ export default function LoginPage() {
             break;
           case 'Signup requires email confirmation':
             setError('⚠️ Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de confirmación.');
+            setShowResendButton(true);
             break;
           default:
             // Check if it's an email confirmation related error
             if (error.message.toLowerCase().includes('confirm') || error.message.toLowerCase().includes('verification')) {
               setError('⚠️ Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de confirmación.');
+              setShowResendButton(true);
             } else {
               setError(error.message || 'Error al iniciar sesión. Intenta de nuevo.');
             }
@@ -196,7 +223,7 @@ export default function LoginPage() {
               {error && (
                 <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
                   <p className="text-red-400 text-sm">{error}</p>
-                  {(error.includes('confirmado') || error.includes('confirmed') || error.includes('confirmación') || error.includes('verification')) && (
+                  {showResendButton && (
                     <button
                       onClick={handleResendConfirmation}
                       disabled={loading}
