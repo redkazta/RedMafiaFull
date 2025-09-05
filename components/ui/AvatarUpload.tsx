@@ -144,8 +144,8 @@ export function AvatarUpload({
       }
 
       // Registrar actividad
-      await supabase
-        .from('user_activity_log')
+      await (supabase
+        .from('user_activity_log') as any)
         .insert({
           user_id: user.id,
           action_type: 'avatar_upload',
