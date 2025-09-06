@@ -30,33 +30,60 @@ FROM pg_policies
 WHERE schemaname = 'public';
 
 -- =====================================================
--- CREAR POLÍTICAS LIMPIAS
+-- CREAR POLÍTICAS LIMPIAS (CON VERIFICACIÓN)
 -- =====================================================
 
-CREATE POLICY "user_profiles_policy" ON public.user_profiles
-FOR ALL TO authenticated
-USING (auth.uid() = id)
-WITH CHECK (auth.uid() = id);
+-- Función para crear política si no existe
+CREATE OR REPLACE FUNCTION create_policy_if_not_exists(
+    policy_name TEXT,
+    table_name TEXT,
+    policy_sql TEXT
+) RETURNS VOID AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'public'
+        AND tablename = table_name
+        AND policyname = policy_name
+    ) THEN
+        EXECUTE policy_sql;
+        RAISE NOTICE 'Política creada: %', policy_name;
+    ELSE
+        RAISE NOTICE 'Política ya existe: %', policy_name;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE POLICY "user_tokens_policy" ON public.user_tokens
-FOR ALL TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+-- Crear políticas usando la función
+SELECT create_policy_if_not_exists(
+    'user_profiles_policy',
+    'user_profiles',
+    'CREATE POLICY "user_profiles_policy" ON public.user_profiles FOR ALL TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id)'
+);
 
-CREATE POLICY "shopping_cart_policy" ON public.shopping_cart
-FOR ALL TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+SELECT create_policy_if_not_exists(
+    'user_tokens_policy',
+    'user_tokens',
+    'CREATE POLICY "user_tokens_policy" ON public.user_tokens FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)'
+);
 
-CREATE POLICY "user_addresses_policy" ON public.user_addresses
-FOR ALL TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+SELECT create_policy_if_not_exists(
+    'shopping_cart_policy',
+    'shopping_cart',
+    'CREATE POLICY "shopping_cart_policy" ON public.shopping_cart FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)'
+);
 
-CREATE POLICY "user_settings_policy" ON public.user_settings
-FOR ALL TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+SELECT create_policy_if_not_exists(
+    'user_addresses_policy',
+    'user_addresses',
+    'CREATE POLICY "user_addresses_policy" ON public.user_addresses FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)'
+);
+
+SELECT create_policy_if_not_exists(
+    'user_settings_policy',
+    'user_settings',
+    'CREATE POLICY "user_settings_policy" ON public.user_settings FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)'
+);
 
 -- =====================================================
 -- VERIFICACIÓN FINAL
