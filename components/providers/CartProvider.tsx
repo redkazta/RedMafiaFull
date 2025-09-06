@@ -12,7 +12,7 @@ interface CartItemWithProduct {
   price_tokens: number;
   products?: {
     name: string;
-    main_image_url: string;
+    image_url: string;
     product_categories?: {
       name: string;
     };
@@ -25,7 +25,7 @@ interface WishlistItemWithProduct {
   created_at: string;
   products?: {
     name: string;
-    main_image_url: string;
+    image_url: string;
     price_tokens: number;
     product_categories?: {
       name: string;
@@ -131,7 +131,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             price_tokens,
             products (
               name,
-              main_image_url,
+              image_url,
               product_categories (name)
             )
           `)
@@ -146,7 +146,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               name: item.products?.name || '',
               price_tokens: item.price_tokens,
               quantity: item.quantity,
-              image: item.products?.main_image_url || '',
+              image: item.products?.image_url || '',
               category: item.products?.product_categories?.name || ''
             }));
           setCart(formattedCart);
@@ -162,7 +162,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           created_at,
           products (
             name,
-            main_image_url,
+            image_url,
             price_tokens,
             product_categories (name)
           )
@@ -175,7 +175,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           product_id: item.product_id,
           name: item.products?.name || '',
           price_tokens: item.products?.price_tokens || 0,
-          image: item.products?.main_image_url || '',
+          image: item.products?.image_url || '',
           category: item.products?.product_categories?.name || ''
         }));
         setWishlist(formattedWishlist);
