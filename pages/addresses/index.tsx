@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AddressForm } from '../../components/forms/AddressForm';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -31,9 +31,9 @@ export default function AddressesPage() {
     if (user) {
       fetchAddresses();
     }
-  }, [user]);
+  }, [user, fetchAddresses]);
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('user_addresses')
@@ -50,7 +50,7 @@ export default function AddressesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   const handleSubmit = async (formData: any) => {
     try {

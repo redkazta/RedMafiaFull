@@ -17,8 +17,8 @@ function ConfirmContent() {
   useEffect(() => {
     const handleEmailConfirmation = async () => {
       try {
-        const token_hash = searchParams.get('token_hash');
-        const type = searchParams.get('type');
+        const token_hash = searchParams?.get('token_hash');
+        const type = searchParams?.get('type');
 
         if (token_hash && type) {
           const { error } = await supabase.auth.verifyOtp({

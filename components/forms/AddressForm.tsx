@@ -43,7 +43,11 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   // Buscar código postal cuando cambie
   useEffect(() => {
     if (formData.codigo_postal.length === 5) {
-      searchZipCode(formData.codigo_postal);
+      searchZipCode(formData.codigo_postal).then((results) => {
+        if (results.length > 0) {
+          setShowColoniaOptions(true);
+        }
+      });
     } else {
       clearResults();
       setShowColoniaOptions(false);
@@ -80,6 +84,18 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     }));
     setShowColoniaOptions(false);
   };
+
+  // Auto-llenar cuando se selecciona una colonia
+  useEffect(() => {
+    if (selectedColonia) {
+      setFormData(prev => ({
+        ...prev,
+        colonia: selectedColonia.asentamiento,
+        ciudad: selectedColonia.ciudad || selectedColonia.municipio,
+        estado: selectedColonia.estado
+      }));
+    }
+  }, [selectedColonia]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,6 +142,9 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         <div className="relative">
           <label htmlFor="colonia" className="block text-sm font-medium text-gray-700 mb-1">
             Colonia/Asentamiento *
+            {results.length > 0 && !selectedColonia && (
+              <span className="text-blue-600 text-xs ml-2">({results.length} opciones disponibles)</span>
+            )}
           </label>
           <input
             type="text"
@@ -134,8 +153,12 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             value={formData.colonia}
             onChange={handleInputChange}
             onFocus={() => setShowColoniaOptions(results.length > 0)}
-            placeholder="Selecciona una colonia"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder={results.length > 0 ? "Selecciona una colonia de la lista" : "Ingresa código postal primero"}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              results.length > 0 && !selectedColonia 
+                ? 'border-blue-300 bg-blue-50' 
+                : 'border-gray-300'
+            }`}
             required
             readOnly={!selectedColonia}
           />
