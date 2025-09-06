@@ -29,9 +29,18 @@ INSERT INTO public.user_addresses (
 -- Verificar que se creó
 SELECT
     'DESPUÉS DE CREAR:' as info,
-    COUNT(*) as direcciones_totales,
+    COUNT(*) as direcciones_totales
+FROM public.user_addresses
+WHERE user_id = auth.uid();
+
+-- Mostrar la dirección creada
+SELECT
+    'DIRECCIÓN CREADA:' as info,
     street,
-    city
+    city,
+    state,
+    postal_code,
+    is_default
 FROM public.user_addresses
 WHERE user_id = auth.uid()
 ORDER BY created_at DESC
