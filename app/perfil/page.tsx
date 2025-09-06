@@ -457,11 +457,25 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!user) return;
 
+    // Validar campos requeridos
+    if (!formData.street.trim() || !formData.city.trim() || !formData.state.trim()) {
+      alert('Por favor completa los campos requeridos: Calle, Ciudad y Estado');
+      setSaving(false);
+      return;
+    }
+
     setSaving(true);
     try {
+      console.log('🔄 Intentando guardar dirección:', {
+        userId: user.id,
+        formData,
+        isEditing: !!editingLocation
+      });
+
       if (editingLocation) {
         // Update existing address
-        const { error } = await supabase
+        console.log('📝 Actualizando dirección existente:', editingLocation.id);
+        const { data, error } = await supabase
           .from('user_addresses')
           .update({
             street: formData.street,
@@ -472,13 +486,17 @@ export default function ProfilePage() {
             is_default: formData.is_default,
             updated_at: new Date().toISOString()
           })
-          .eq('id', editingLocation.id);
+          .eq('id', editingLocation.id)
+          .select();
+
+        console.log('📊 Resultado actualización:', { data, error });
 
         if (error) throw error;
         alert('Dirección actualizada correctamente');
       } else {
         // Create new address
-        const { error } = await supabase
+        console.log('➕ Creando nueva dirección');
+        const { data, error } = await supabase
           .from('user_addresses')
           .insert({
             user_id: user.id,
@@ -488,7 +506,10 @@ export default function ProfilePage() {
             postal_code: formData.postal_code,
             country: formData.country,
             is_default: formData.is_default
-          });
+          })
+          .select();
+
+        console.log('📊 Resultado inserción:', { data, error });
 
         if (error) throw error;
         alert('Dirección agregada correctamente');
@@ -496,9 +517,15 @@ export default function ProfilePage() {
 
       loadUserAddresses();
       resetForm();
-    } catch (error) {
-      console.error('Error saving address:', error);
-      alert('Error al guardar la dirección');
+    } catch (error: any) {
+      console.error('❌ Error detallado al guardar dirección:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        fullError: error
+      });
+      alert(`Error al guardar la dirección: ${error.message || 'Error desconocido'}`);
     } finally {
       setSaving(false);
     }
