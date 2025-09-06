@@ -5,10 +5,23 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
-import { FiEdit, FiSettings, FiShoppingBag, FiMapPin, FiArrowLeft, FiCalendar, FiMail, FiUser, FiGlobe, FiHeart, FiLogIn, FiPhone, FiSun, FiMoon, FiMonitor, FiBell, FiShield, FiSave } from 'react-icons/fi';
+import { FiEdit, FiSettings, FiShoppingBag, FiMapPin, FiArrowLeft, FiCalendar, FiMail, FiUser, FiGlobe, FiHeart, FiLogIn, FiPhone, FiSun, FiMoon, FiMonitor, FiBell, FiShield, FiSave, FiCheck, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useCart, WishlistItem } from '@/components/providers/CartProvider';
 import { supabase } from '@/lib/supabase';
+
+interface UserLocation {
+  id: number;
+  user_id: string | null;
+  city: string;
+  country: string | null;
+  postal_code: string;
+  state: string;
+  street: string;
+  is_default: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
 
 export default function ProfilePage() {
   const { user, profile, settings, tokenBalance, refreshProfile, loading } = useAuth();
@@ -47,6 +60,29 @@ export default function ProfilePage() {
     content_filter: 'moderate'
   });
   const [activeTab, setActiveTab] = useState('overview');
+  const [profileForm, setProfileForm] = useState({
+    first_name: '',
+    last_name: '',
+    username: '',
+    phone: '',
+    location: '',
+    website: '',
+    bio: ''
+  });
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+
+  // Address form state
+  const [showForm, setShowForm] = useState(false);
+  const [editingLocation, setEditingLocation] = useState<UserLocation | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    street: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country: 'México',
+    is_default: false
+  });
 
   const loadUserStats = useCallback(async () => {
     if (!user) return;
@@ -109,7 +145,8 @@ export default function ProfilePage() {
         }));
         setRecentActivity(formattedData);
       } else {
-        // Fallback to mock data if no real activity exists
+        // Fallback to mock data if no real activity exists or table not available
+        console.log('user_activity_log table not available or no data:', error);
         setRecentActivity([
           {
             id: '1',
@@ -125,8 +162,12 @@ export default function ProfilePage() {
           }
         ]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading recent activity:', error);
+      // If table doesn't exist, use mock data
+      if (error.message?.includes('does not exist') || error.code === 'PGRST205') {
+        console.log('user_activity_log table not available, using mock data');
+      }
       // Fallback to mock data on error
       setRecentActivity([
         {
@@ -154,12 +195,18 @@ export default function ProfilePage() {
       if (!error && data) {
         setAddresses(data);
       } else {
-        console.log('No addresses found or error:', error);
+        console.log('No addresses found or table not available:', error);
         setAddresses([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading user addresses:', error);
+      // If table doesn't exist, show empty state
+      if (error.message?.includes('does not exist') || error.code === 'PGRST205') {
+        console.log('user_addresses table not available, showing empty state');
+        setAddresses([]);
+      } else {
       setAddresses([]);
+      }
     }
   }, [user]);
 
@@ -217,9 +264,16 @@ export default function ProfilePage() {
           }
         });
         setUserSettings(settings);
+      } else {
+        console.log('user_settings table not available or no data:', error);
+        // Keep default settings if table doesn't exist
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading user settings:', error);
+      // If table doesn't exist, keep default settings
+      if (error.message?.includes('does not exist') || error.code === 'PGRST205') {
+        console.log('user_settings table not available, using default settings');
+      }
     }
   }, [user, userSettings]);
 
@@ -269,8 +323,186 @@ export default function ProfilePage() {
     }
   }, [user, loadUserStats, loadRecentActivity, loadUserAddresses, loadUserOrders, loadUserSettings, refreshProfile]);
 
+  // Initialize profile form when profile data is available
+  useEffect(() => {
+    if (profile) {
+      setProfileForm({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        username: profile.username || '',
+        phone: profile.phone || '',
+        location: profile.location || '',
+        website: profile.website || '',
+        bio: profile.bio || ''
+      });
+    }
+  }, [profile]);
+
   const handleAvatarUpdate = (newAvatarUrl: string) => {
     refreshProfile();
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setUpdatingProfile(true);
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
+          first_name: profileForm.first_name,
+          last_name: profileForm.last_name,
+          username: profileForm.username,
+          phone: profileForm.phone,
+          location: profileForm.location,
+          website: profileForm.website,
+          bio: profileForm.bio,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Refresh profile data
+      refreshProfile();
+      setActiveTab('overview'); // Go back to overview
+      alert('Perfil actualizado correctamente');
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      alert('Error al actualizar el perfil');
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
+
+  const handleEditAddress = (address: any) => {
+    setFormData({
+      street: address.address_line_1 || '',
+      city: address.city || '',
+      state: address.state || '',
+      postal_code: address.postal_code || '',
+      country: address.country || 'México',
+      is_default: address.is_default || false
+    });
+    setEditingLocation(address);
+    setShowForm(true);
+  };
+
+  const handleDeleteAddress = async (addressId: number) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta dirección?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_addresses')
+        .delete()
+        .eq('id', addressId);
+
+      if (error) throw error;
+
+      loadUserAddresses();
+      alert('Dirección eliminada correctamente');
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      alert('Error al eliminar la dirección');
+    }
+  };
+
+  const handleSetDefaultAddress = async (addressId: number) => {
+    if (!user) return;
+
+    try {
+      // Remove default from all addresses
+      await supabase
+        .from('user_addresses')
+        .update({ is_default: false })
+        .eq('user_id', user.id);
+
+      // Set new default
+      const { error } = await supabase
+        .from('user_addresses')
+        .update({ is_default: true })
+        .eq('id', addressId);
+
+      if (error) throw error;
+
+      loadUserAddresses();
+      alert('Dirección por defecto actualizada');
+    } catch (error) {
+      console.error('Error setting default address:', error);
+      alert('Error al establecer dirección por defecto');
+    }
+  };
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      street: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: 'México',
+      is_default: false
+    });
+    setEditingLocation(null);
+    setShowForm(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setSaving(true);
+    try {
+      if (editingLocation) {
+        // Update existing address
+        const { error } = await supabase
+          .from('user_addresses')
+          .update({
+            street: formData.street,
+            city: formData.city,
+            state: formData.state,
+            postal_code: formData.postal_code,
+            country: formData.country,
+            is_default: formData.is_default,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingLocation.id);
+
+        if (error) throw error;
+        alert('Dirección actualizada correctamente');
+      } else {
+        // Create new address
+        const { error } = await supabase
+          .from('user_addresses')
+          .insert({
+            user_id: user.id,
+            street: formData.street,
+            city: formData.city,
+            state: formData.state,
+            postal_code: formData.postal_code,
+            country: formData.country,
+            is_default: formData.is_default
+          });
+
+        if (error) throw error;
+        alert('Dirección agregada correctamente');
+      }
+
+      loadUserAddresses();
+      resetForm();
+    } catch (error) {
+      console.error('Error saving address:', error);
+      alert('Error al guardar la dirección');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Función para forzar recarga del perfil
@@ -459,6 +691,7 @@ export default function ProfilePage() {
                 { key: 'orders', label: 'Mis Órdenes', icon: FiShoppingBag },
                 { key: 'wishlist', label: 'Lista de Deseos', icon: FiHeart },
                 { key: 'addresses', label: 'Direcciones', icon: FiMapPin },
+                { key: 'edit-profile', label: 'Editar Perfil', icon: FiEdit },
                 { key: 'settings', label: 'Configuraciones', icon: FiSettings },
               ].map((tab) => (
                 <button
@@ -723,7 +956,10 @@ export default function ProfilePage() {
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-white">Mis Direcciones</h3>
-                  <button className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold text-sm">
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold text-sm"
+                  >
                     <FiMapPin className="w-4 h-4" />
                     <span>Agregar Dirección</span>
                   </button>
@@ -733,12 +969,19 @@ export default function ProfilePage() {
                   <div className="text-center py-12">
                     <FiMapPin className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                     <p className="text-gray-400 mb-4">No tienes direcciones guardadas</p>
-                    <p className="text-sm text-gray-500">Agrega tu primera dirección para facilitar tus compras</p>
+                    <p className="text-sm text-gray-500 mb-6">Agrega tu primera dirección para facilitar tus compras</p>
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold"
+                    >
+                      <FiMapPin className="w-5 h-5" />
+                      <span>Agregar Dirección</span>
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {addresses.map((address) => (
-                      <div key={address.id} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                      <div key={address.id} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 hover:border-primary-500/50 transition-colors">
                         <div className="flex justify-between items-start mb-2">
                                                   <div className="flex items-center space-x-2">
                           <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
@@ -750,9 +993,22 @@ export default function ProfilePage() {
                             </span>
                           )}
                         </div>
-                          <button className="text-gray-400 hover:text-white transition-colors">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleEditAddress(address)}
+                              className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                              title="Editar dirección"
+                            >
                             <FiEdit className="w-4 h-4" />
                           </button>
+                            <button
+                              onClick={() => handleDeleteAddress(address.id)}
+                              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                              title="Eliminar dirección"
+                            >
+                              <FiTrash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
 
                         <div className="text-white font-medium mb-1">
@@ -767,10 +1023,274 @@ export default function ProfilePage() {
                             'Ubicación no especificada'
                           }
                         </div>
+
+                        {!address.is_default && (
+                          <div className="mt-4 pt-4 border-t border-gray-600">
+                            <button
+                              onClick={() => handleSetDefaultAddress(address.id)}
+                              className="text-primary-400 hover:text-primary-300 text-sm font-medium transition-colors"
+                            >
+                              Establecer como dirección por defecto
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 )}
+
+                {/* Address Form */}
+                {(showForm || editingLocation) && (
+                  <div className="mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold text-white">
+                        {editingLocation ? 'Editar Dirección' : 'Nueva Dirección'}
+                      </h3>
+                      <button
+                        onClick={resetForm}
+                        className="p-2 text-gray-400 hover:text-white rounded-lg transition-colors"
+                      >
+                        <FiArrowLeft className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div>
+                        <label className="text-white font-medium mb-2 block">
+                          Dirección completa *
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.street}
+                          onChange={(e) => handleInputChange('street', e.target.value)}
+                          placeholder="Calle, número, colonia, ciudad"
+                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-white font-medium mb-2 block">
+                            Ciudad *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.city}
+                            onChange={(e) => handleInputChange('city', e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="text-white font-medium mb-2 block">
+                            Estado *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.state}
+                            onChange={(e) => handleInputChange('state', e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-white font-medium mb-2 block">
+                            Código Postal *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.postal_code}
+                            onChange={(e) => handleInputChange('postal_code', e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="text-white font-medium mb-2 block">
+                            País *
+                          </label>
+                          <select
+                            value={formData.country}
+                            onChange={(e) => handleInputChange('country', e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            required
+                          >
+                            <option value="México">México</option>
+                            <option value="Estados Unidos">Estados Unidos</option>
+                            <option value="Canadá">Canadá</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          id="is_default_address"
+                          checked={formData.is_default}
+                          onChange={(e) => handleInputChange('is_default', e.target.checked)}
+                          className="w-4 h-4 text-primary-500 bg-gray-700 border-gray-600 rounded focus:ring-primary-500"
+                        />
+                        <label htmlFor="is_default_address" className="text-white font-medium">
+                          Establecer como dirección por defecto
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-700">
+                        <button
+                          type="button"
+                          onClick={resetForm}
+                          className="px-6 py-3 text-gray-400 hover:text-white transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={saving}
+                          className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {saving ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <span>Guardando...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FiCheck className="w-4 h-4" />
+                              <span>{editingLocation ? 'Actualizar' : 'Guardar'}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'edit-profile' && (
+              <div className="space-y-8">
+                {/* Edit Profile Form */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-white mb-6">Editar Perfil</h3>
+                  <form onSubmit={handleUpdateProfile} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="text-white font-medium mb-2 block">Nombre</label>
+                        <input
+                          type="text"
+                          value={profileForm.first_name}
+                          onChange={(e) => setProfileForm(prev => ({ ...prev, first_name: e.target.value }))}
+                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          placeholder="Tu nombre"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-white font-medium mb-2 block">Apellido</label>
+                        <input
+                          type="text"
+                          value={profileForm.last_name}
+                          onChange={(e) => setProfileForm(prev => ({ ...prev, last_name: e.target.value }))}
+                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          placeholder="Tu apellido"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-white font-medium mb-2 block">Nombre de usuario</label>
+                      <input
+                        type="text"
+                        value={profileForm.username}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, username: e.target.value }))}
+                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="@usuario"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white font-medium mb-2 block">Teléfono</label>
+                      <input
+                        type="tel"
+                        value={profileForm.phone}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="+52 55 1234 5678"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white font-medium mb-2 block">Ubicación</label>
+                      <input
+                        type="text"
+                        value={profileForm.location}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, location: e.target.value }))}
+                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="Ciudad, Estado"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white font-medium mb-2 block">Sitio web</label>
+                      <input
+                        type="url"
+                        value={profileForm.website}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, website: e.target.value }))}
+                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="https://tu-sitio.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white font-medium mb-2 block">Biografía</label>
+                      <textarea
+                        value={profileForm.bio}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
+                        rows={4}
+                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                        placeholder="Cuéntanos sobre ti..."
+                      />
+                    </div>
+
+                    <div className="flex justify-end space-x-4">
+                      <button
+                        type="button"
+                        onClick={() => setProfileForm({
+                          first_name: profile?.first_name || '',
+                          last_name: profile?.last_name || '',
+                          username: profile?.username || '',
+                          phone: profile?.phone || '',
+                          location: profile?.location || '',
+                          website: profile?.website || '',
+                          bio: profile?.bio || ''
+                        })}
+                        className="px-6 py-3 text-gray-400 hover:text-white transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={updatingProfile}
+                        className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {updatingProfile ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span>Guardando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <FiSave className="w-4 h-4" />
+                            <span>Guardar Cambios</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
 

@@ -105,6 +105,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return null;
         }
 
+        // PGRST205 = Table does not exist in schema cache
+        if (error.code === 'PGRST205') {
+          console.warn('user_profiles table does not exist. Profile functionality will be limited.');
+          return null;
+        }
+
         // Log actual errors with meaningful information
         console.error('Error fetching profile:', {
           message: error.message || 'Unknown error',

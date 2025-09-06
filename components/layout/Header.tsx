@@ -146,7 +146,7 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
     const timeout = setTimeout(() => {
       setIsOpen(false);
       setIsHovered(false);
-    }, 300); // Consistent with MiniCart and MiniWishlist
+    }, 150); // Reduced for better UX
     setHoverTimeout(timeout);
   };
 
@@ -205,8 +205,6 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
     return (
       <div className="relative">
         <button
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
           className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-300 hover:text-red-400 transition-colors rounded-lg hover:bg-gray-800/50 group"
         >
           <div className="relative">
@@ -235,8 +233,6 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                 transition={{ duration: 0.2 }}
                 className="absolute top-full right-0 mt-2 w-80 bg-gray-900/95 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl z-50"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
               >
                 <div className="p-6">
                   {/* User Info Header */}
@@ -295,43 +291,28 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-white font-medium text-sm">Mis Ubicaciones</h3>
                       <Link
-                        href="/direcciones"
+                        href="/perfil"
                         onClick={() => setIsOpen(false)}
                         className="flex items-center space-x-1 px-2 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 rounded-md transition-colors text-xs"
                       >
                         <FiPlus className="w-3 h-3" />
-                        <span>Agregar</span>
+                        <span>Gestionar</span>
                       </Link>
                     </div>
 
-                    <div className="space-y-2">
-                      {/* Sample location - In a real app, this would come from the database */}
-                      <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
-                        <div className="flex items-center space-x-2">
-                          <FiMapPin className="w-4 h-4 text-gray-400" />
-                          <div>
-                            <div className="text-white text-sm font-medium">Casa</div>
-                            <div className="text-gray-400 text-xs">Calle Principal 123</div>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {user && profile ? (
+                        <div className="text-center py-4">
+                          <FiMapPin className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                          <p className="text-gray-400 text-xs">Ubicaciones se gestionan en el perfil</p>
                           </div>
+                      ) : (
+                        <div className="text-center py-4">
+                          <FiMapPin className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                          <p className="text-gray-400 text-xs">Inicia sesión para ver ubicaciones</p>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <button className="p-1 text-gray-400 hover:text-blue-400 transition-colors">
-                            <FiEdit className="w-3 h-3" />
-                          </button>
-                          <button className="p-1 text-gray-400 hover:text-red-400 transition-colors">
-                            <FiTrash2 className="w-3 h-3" />
-                          </button>
-                        </div>
+                      )}
                       </div>
-                    </div>
-
-                    <Link
-                      href="/direcciones"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center justify-center w-full mt-3 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
-                    >
-                      <span>Ver todas las ubicaciones</span>
-                    </Link>
                   </div>
 
                   {/* Logout */}
@@ -366,8 +347,6 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
     return (
       <div className="relative">
         <button
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
           className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-300 hover:text-red-400 transition-colors rounded-lg hover:bg-gray-800/50 group border border-gray-700/50"
         >
           <div className="relative">
@@ -398,8 +377,6 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                 transition={{ duration: 0.2 }}
                 className="absolute top-full right-0 mt-2 w-80 bg-gray-900/95 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl z-50"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
               >
                 <div className="p-6">
                   {/* Header */}
@@ -461,8 +438,6 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
   return (
     <div className="relative">
       <button
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-300 hover:text-red-400 transition-colors rounded-lg hover:bg-gray-800/50 border border-gray-700/50 group"
       >
         <div className="relative">
@@ -490,8 +465,6 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.2 }}
               className="absolute top-full right-0 mt-2 w-80 bg-gray-900/95 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl z-50"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
             >
               <div className="p-6">
                 {/* Header */}
@@ -571,7 +544,6 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
   const [isMiniLocationOpen, setIsMiniLocationOpen] = useState(false);
-  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
 
   // Debug log para Header
@@ -594,12 +566,12 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-md border-b border-red-900/50 shadow-lg shadow-red-900/20 w-full">
       <div className="w-full max-w-full px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-                    {/* Left Side - Logo + MiniLocation */}
-          <div className="flex items-center space-x-3 sm:space-x-4 lg:space-x-8 flex-shrink-0">
-            {/* Logo */}
+                    {/* Left Side - Logo + Centered MiniLocation */}
+          <div className="flex items-center flex-shrink-0 relative">
+            {/* Logo - Stretched 80% wider */}
             <Link href="/" className="flex items-center group">
               <div className="relative">
-                <div className="w-16 h-12 sm:w-24 sm:h-16 lg:w-32 lg:h-20 group-hover:shadow-xl group-hover:shadow-red-600/40 transition-all duration-300">
+                <div className="w-20 h-12 sm:w-32 sm:h-16 lg:w-56 lg:h-20 group-hover:shadow-xl group-hover:shadow-red-600/40 transition-all duration-300">
                   <Image
                     src="/redmafialogo.png"
                     alt="LA RED MAFIA"
@@ -612,19 +584,12 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Mini Location - Between Logo and Navigation */}
+            {/* Mini Location - Centered between logo end and navigation start */}
             <div
-              className="hidden md:block"
-              onMouseEnter={() => {
-                if (hoverTimeout) clearTimeout(hoverTimeout);
-                setIsMiniLocationOpen(true);
-              }}
-              onMouseLeave={() => {
-                const timeout = setTimeout(() => {
-                  setIsMiniLocationOpen(false);
-                }, 300); // Consistent with MiniCart and MiniWishlist
-                setHoverTimeout(timeout);
-              }}
+              className="hidden md:block absolute left-full ml-4"
+              style={{ transform: 'translateX(-50%)' }}
+              onMouseEnter={() => setIsMiniLocationOpen(true)}
+              onMouseLeave={() => setIsMiniLocationOpen(false)}
             >
               <MiniLocation isOpen={isMiniLocationOpen} setIsOpen={setIsMiniLocationOpen} />
             </div>
@@ -665,16 +630,8 @@ export function Header() {
             {/* User Panel - Always Visible */}
             <div
               className="flex items-center ml-2 md:ml-0"
-              onMouseEnter={() => {
-                if (hoverTimeout) clearTimeout(hoverTimeout);
-                setIsUserPanelOpen(true);
-              }}
-              onMouseLeave={() => {
-                const timeout = setTimeout(() => {
-                  setIsUserPanelOpen(false);
-                }, 300); // Consistent with MiniCart and MiniWishlist
-                setHoverTimeout(timeout);
-              }}
+              onMouseEnter={() => setIsUserPanelOpen(true)}
+              onMouseLeave={() => setIsUserPanelOpen(false)}
             >
               <UserPanel isOpen={isUserPanelOpen} setIsOpen={setIsUserPanelOpen} />
             </div>

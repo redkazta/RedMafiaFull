@@ -29,24 +29,7 @@ interface UserLocation {
 export function MiniLocation({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: boolean) => void }) {
   const [locations, setLocations] = useState<UserLocation[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   const { user, profile } = useAuth();
-
-  // Hover state management
-  const handleMouseEnter = () => {
-    if (hoverTimeout) clearTimeout(hoverTimeout);
-    setIsOpen(true);
-    setIsHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    const timeout = setTimeout(() => {
-      setIsOpen(false);
-      setIsHovered(false);
-    }, 300); // Consistent with MiniCart and MiniWishlist
-    setHoverTimeout(timeout);
-  };
 
   const loadLocations = useCallback(async () => {
     if (!user) return;
@@ -83,8 +66,6 @@ export function MiniLocation({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen
     return (
       <div className="relative">
         <button
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
           className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600/20 to-red-700/20 hover:from-red-600/30 hover:to-red-700/30 border border-red-600/30 rounded-lg transition-all duration-300 group"
         >
           <div className="relative">
@@ -104,8 +85,6 @@ export function MiniLocation({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                 transition={{ duration: 0.2 }}
                 className="absolute top-full left-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-700/50 z-50"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
               >
                 <div className="p-6">
                   <div className="text-center mb-4">
@@ -161,8 +140,6 @@ export function MiniLocation({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen
   return (
     <div className="relative">
       <button
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600/20 to-red-700/20 hover:from-red-600/30 hover:to-red-700/30 border border-red-600/30 rounded-lg transition-all duration-300 group"
       >
         <div className="relative">
@@ -182,8 +159,6 @@ export function MiniLocation({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.2 }}
               className="absolute top-full left-0 mt-2 w-80 bg-gray-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-700/50 z-50"
-              onMouseEnter={() => setIsOpen(true)}
-              onMouseLeave={() => setIsOpen(false)}
             >
               <div className="p-6">
                 <div className="text-center mb-4">
