@@ -13,6 +13,7 @@ interface ZipCodeResponse {
   codigo_postal: string;
   resultados: ZipCodeResult[];
   total: number;
+  error?: string;
 }
 
 export const useZipCode = () => {
