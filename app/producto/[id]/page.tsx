@@ -33,11 +33,24 @@ interface Product {
 
 export default function ProductPage() {
   const params = useParams();
-  const productIdString = params.id as string;
+  const productIdString = params?.id as string;
   const productId = parseInt(productIdString, 10); // ✅ Convertir string a number
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+
+  // Validar que params existe
+  if (!params || !params.id) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-white">ID de producto no válido</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const loadProduct = useCallback(async () => {
     if (isNaN(productId)) {
