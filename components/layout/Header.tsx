@@ -120,21 +120,9 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
   const [isHovered, setIsHovered] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Debug: Mostrar estado actual con más detalle (solo en desarrollo)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('UserPanel Debug:', {
-      user: !!user,
-      profile: !!profile,
-      loading,
-      userId: user?.id,
-      userEmail: user?.email,
-      profileId: profile?.id,
-      profileName: profile?.display_name,
-      tokenBalance,
-      sessionExists: !!session,
-      forceRender,
-      isOpen
-    });
+  // Debug: Simplified logging (solo en desarrollo)
+  if (process.env.NODE_ENV === 'development' && loading) {
+    console.log('🔄 UserPanel loading state');
   }
 
   // Hover state management
@@ -159,19 +147,12 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
     }
   }, [isOpen]);
 
-  // Force render after 3 seconds if still loading
+  // Remove problematic timeout that causes auth state issues
   useEffect(() => {
-    if (loading) {
-      const timer = setTimeout(() => {
-        console.log('⚠️ Forcing UserPanel render after 3s timeout - Auth state may be stuck');
-        console.log('Current state:', { user: !!user, profile: !!profile, loading, session: !!session });
-        setForceRender(true);
-      }, 3000);
-      return () => clearTimeout(timer);
-    } else {
-      setForceRender(false); // Reset if loading completes normally
+    if (!loading) {
+      setForceRender(false);
     }
-  }, [loading, user, profile, session]);
+  }, [loading]);
 
   if (loading && !forceRender) {
     return (

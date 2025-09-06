@@ -397,22 +397,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          console.log('✅ User authenticated, fetching profile data...');
+          // Simplified logging to prevent React errors
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ User authenticated, fetching profile data...');
+          }
 
           let [profileData, tokensData, settingsData] = await Promise.all([
             fetchProfile(session.user.id),
             fetchTokens(session.user.id),
             fetchSettings(session.user.id)
           ]);
-
-          console.log('📈 Profile fetch results:', {
-            hasProfile: !!profileData,
-            profileId: profileData?.id,
-            profileName: profileData?.display_name,
-            hasTokens: !!tokensData,
-            tokenBalance: tokensData?.current_balance,
-            hasSettings: !!settingsData
-          });
 
           // If profile doesn't exist, create it
           if (!profileData || !tokensData) {
