@@ -383,11 +383,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           error: userError
         });
 
-        // Then try to query users table
-        const { data, error } = await supabase.from('users').select('count').limit(1).single();
+        // Test user_profiles table instead of users
+        const { data, error } = await supabase.from('user_profiles').select('count').limit(1).single();
 
         if (error) {
-          console.error('❌ Supabase users query failed:', {
+          console.error('❌ Supabase user_profiles query failed:', {
             message: error.message,
             code: error.code,
             details: error.details,
