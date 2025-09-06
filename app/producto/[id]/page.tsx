@@ -39,19 +39,6 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  // Validar que params existe
-  if (!params || !params.id) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-white">ID de producto no válido</div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   const loadProduct = useCallback(async () => {
     if (isNaN(productId)) {
       console.error('Invalid product ID');
@@ -117,6 +104,19 @@ export default function ProductPage() {
   useEffect(() => {
     loadProduct();
   }, [productId, loadProduct]);
+
+  // Validar que params existe después de todos los hooks
+  if (!params || !params.id) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-white">ID de producto no válido</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
