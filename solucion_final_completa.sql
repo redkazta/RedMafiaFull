@@ -144,6 +144,10 @@ FROM auth.users u
 LEFT JOIN public.user_profiles p ON u.id = p.id
 WHERE p.id IS NULL;
 
+-- Limpiar dirección de prueba del diagnóstico
+DELETE FROM public.user_addresses
+WHERE street = 'Calle de Prueba 123' AND user_id = '7972685f-06ac-4ffb-8442-c8bed2aa76f8';
+
 -- =====================================================
 -- PASO 6: VERIFICACIÓN FINAL
 -- =====================================================
