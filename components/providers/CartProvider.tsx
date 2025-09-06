@@ -167,7 +167,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             product_categories (name)
           )
         `)
-        .eq('user_id', parseInt(user.id.replace(/-/g, '').substring(0, 8), 16)) as { data: WishlistItemWithProduct[] | null; error: any };
+        .eq('user_id', user.id) as { data: WishlistItemWithProduct[] | null; error: any };
 
       if (!wishlistError && wishlistItems) {
         const formattedWishlist = wishlistItems.map((item: WishlistItemWithProduct) => ({
@@ -399,12 +399,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (existing) return; // Already in wishlist
 
         // Convertir user.id (UUID string) a integer para la BD
-        const userIdInt = parseInt(user.id.replace(/-/g, '').substring(0, 8), 16);
+        const userId = user.id;
 
         const { data, error } = await supabase
           .from('ecommerce_wishlists')
           .insert({
-            user_id: userIdInt,
+            user_id: userId,
             product_id: item.product_id
           })
           .select('id')
