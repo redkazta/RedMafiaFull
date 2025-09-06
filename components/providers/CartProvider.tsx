@@ -167,7 +167,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             product_categories (name)
           )
         `)
-        .eq('user_id', user.id) as { data: WishlistItemWithProduct[] | null; error: any };
+        .eq('user_id', user.id as any) as { data: WishlistItemWithProduct[] | null; error: any };
 
       if (!wishlistError && wishlistItems) {
         const formattedWishlist = wishlistItems.map((item: WishlistItemWithProduct) => ({
@@ -404,9 +404,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase
           .from('ecommerce_wishlists')
           .insert({
-            user_id: userId,
+            user_id: userId as any,
             product_id: item.product_id
-          })
+          } as any)
           .select('id')
           .single();
 
