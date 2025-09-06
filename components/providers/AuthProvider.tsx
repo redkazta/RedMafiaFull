@@ -102,12 +102,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         // PGRST116 = No profile found, this is normal for new users
         if (error.code === 'PGRST116') {
+          console.log('No profile found for user:', userId);
           return null;
         }
 
         // PGRST205 = Table does not exist in schema cache
         if (error.code === 'PGRST205') {
           console.warn('user_profiles table does not exist. Profile functionality will be limited.');
+          return null;
+        }
+
+        // 406 = Not Acceptable (RLS policy issue)
+        if (error.code === '406' || error.message?.includes('406')) {
+          console.warn('RLS policy issue for user profile. User may not have proper permissions.');
           return null;
         }
 
@@ -151,13 +158,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('No tokens found for user:', userId);
           return null;
         }
-        console.error('Error fetching tokens:', error);
+
+        // 406 = Not Acceptable (RLS policy issue)
+        if (error.code === '406' || error.message?.includes('406')) {
+          console.warn('RLS policy issue for user tokens. User may not have proper permissions.');
+          return null;
+        }
+
+        console.error('Error fetching tokens:', {
+          message: error.message || 'Unknown error',
+          code: error.code || 'No code',
+          details: error.details || 'No details',
+          hint: error.hint || 'No hint'
+        });
         return null;
       }
 
       return data;
-    } catch (error) {
-      console.error('Error fetching tokens:', error);
+    } catch (error: any) {
+      console.error('Unexpected error fetching tokens:', {
+        message: error.message || 'Unknown error',
+        name: error.name || 'Unknown error type',
+        stack: error.stack || 'No stack trace'
+      });
       return null;
     }
   };
@@ -193,17 +216,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const createUserProfile = async (user: User) => {
     try {
-      // Create profile
+      // First, try to get existing profile
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (existingProfile) {
+        // Profile already exists, try to get tokens
+        const { data: existingTokens } = await supabase
+          .from('user_tokens')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        return { profile: existingProfile, tokens: existingTokens };
+      }
+
+      // Create profile with upsert to handle race conditions
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
-        .insert({
+        .upsert({
           id: user.id,
           email: user.email || '',
           username: user.user_metadata?.username || user.email?.split('@')[0] || '',
-          first_name: user.user_metadata?.first_name || '',
-          last_name: user.user_metadata?.last_name || '',
+          first_name: user.user_metadata?.first_name || 'Usuario',
+          last_name: user.user_metadata?.last_name || 'Prueba',
           phone: user.user_metadata?.phone || '',
-          display_name: user.user_metadata?.display_name || `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim(),
+          display_name: user.user_metadata?.display_name || 
+            `${user.user_metadata?.first_name || 'Usuario'} ${user.user_metadata?.last_name || 'Prueba'}`.trim() ||
+            user.email?.split('@')[0] || 'Usuario',
           is_verified: !!user.email_confirmed_at,
           is_active: true
         })
@@ -211,15 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (profileError) {
-        // PGRST116 = No profile found, PGRST301 = Row level security violation
-        // 23505 = Unique violation (already exists)
-        if (profileError.code === '23505') {
-          // Profile already exists, this is normal
-          return null;
-        }
-
-        // Log actual errors with meaningful information
-        console.error('Error creating profile:', {
+        console.error('Error creating/updating profile:', {
           message: profileError.message || 'Unknown error',
           code: profileError.code || 'No code',
           details: profileError.details || 'No details',
@@ -228,10 +263,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
-      // Create initial tokens
+      // Create initial tokens with upsert
       const { data: tokensData, error: tokensError } = await supabase
         .from('user_tokens')
-        .insert({
+        .upsert({
           user_id: user.id,
           current_balance: 1000,
           total_earned: 1000,
@@ -241,32 +276,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (tokensError) {
-        // 23505 = Unique violation (already exists)
-        if (tokensError.code === '23505') {
-          // Tokens already exist, this is normal
-        } else {
-          // Log actual errors with meaningful information
-          console.error('Error creating tokens:', {
-            message: tokensError.message || 'Unknown error',
-            code: tokensError.code || 'No code',
-            details: tokensError.details || 'No details',
-            hint: tokensError.hint || 'No hint'
-          });
-        }
+        console.error('Error creating/updating tokens:', {
+          message: tokensError.message || 'Unknown error',
+          code: tokensError.code || 'No code',
+          details: tokensError.details || 'No details',
+          hint: tokensError.hint || 'No hint'
+        });
+        return { profile: profileData, tokens: null };
       }
 
       return { profile: profileData, tokens: tokensData };
     } catch (error: any) {
-      // Only log unexpected errors
-      if (error && typeof error === 'object') {
-        console.error('Unexpected error creating user profile:', {
-          message: error.message || 'Unknown error',
-          name: error.name || 'Unknown error type',
-          stack: error.stack || 'No stack trace'
-        });
-      } else {
-        console.error('Unknown error creating user profile:', error);
-      }
+      console.error('Unexpected error creating user profile:', {
+        message: error.message || 'Unknown error',
+        name: error.name || 'Unknown error type',
+        stack: error.stack || 'No stack trace'
+      });
       return null;
     }
   };
