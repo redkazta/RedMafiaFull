@@ -10,17 +10,12 @@ import { supabase } from '@/lib/supabase';
 interface UserLocation {
   id: string;
   user_id: string | null;
-  address_type: string;
-  is_default: boolean | null;
-  recipient_name: string;
-  company?: string | null;
-  phone?: string | null;
-  address_line_1: string;
-  address_line_2?: string | null;
+  street: string;
   city: string;
   state: string;
   postal_code: string;
   country: string | null;
+  is_default: boolean | null;
   is_active: boolean | null;
   created_at: string | null;
   updated_at: string | null;
@@ -38,9 +33,8 @@ export function MiniLocation({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen
     try {
       const { data, error } = await (supabase
         .from('user_addresses') as any)
-        .select('id, user_id, address_type, is_default, recipient_name, company, phone, address_line_1, address_line_2, city, state, postal_code, country, is_active, created_at, updated_at')
+        .select('id, user_id, street, city, state, postal_code, country, is_default, is_active, created_at, updated_at')
         .eq('user_id', user.id)
-        .eq('is_active', true)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(3);
@@ -186,7 +180,7 @@ export function MiniLocation({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen
                         <div className="flex items-center space-x-2">
                           <FiMapPin className="w-4 h-4 text-gray-400" />
                           <div>
-                            <div className="text-white text-sm font-medium">{location.address_line_1}</div>
+                            <div className="text-white text-sm font-medium">{location.street}</div>
                             <div className="text-gray-400 text-xs">{location.city}, {location.state}</div>
                           </div>
                         </div>
