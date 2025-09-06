@@ -120,20 +120,22 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
   const [isHovered, setIsHovered] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Debug: Mostrar estado actual con más detalle
-  console.log('UserPanel Debug:', {
-    user: !!user,
-    profile: !!profile,
-    loading,
-    userId: user?.id,
-    userEmail: user?.email,
-    profileId: profile?.id,
-    profileName: profile?.display_name,
-    tokenBalance,
-    sessionExists: !!session,
-    forceRender,
-    isOpen
-  });
+  // Debug: Mostrar estado actual con más detalle (solo en desarrollo)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('UserPanel Debug:', {
+      user: !!user,
+      profile: !!profile,
+      loading,
+      userId: user?.id,
+      userEmail: user?.email,
+      profileId: profile?.id,
+      profileName: profile?.display_name,
+      tokenBalance,
+      sessionExists: !!session,
+      forceRender,
+      isOpen
+    });
+  }
 
   // Hover state management
   const handleMouseEnter = () => {
@@ -184,18 +186,20 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
   }
 
   // Improved logic: handle all authentication states properly
-  console.log('🎯 UserPanel Render Decision:', {
-    hasUser: !!user,
-    hasProfile: !!profile,
-    hasSession: !!session,
-    isLoading: loading,
-    forceRender,
-    userId: user?.id,
-    profileId: profile?.id,
-    userEmail: user?.email,
-    sessionUserId: session?.user?.id,
-    decision: user && profile ? 'authenticated' : user ? 'partial-auth' : 'not-authenticated'
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎯 UserPanel Render Decision:', {
+      hasUser: !!user,
+      hasProfile: !!profile,
+      hasSession: !!session,
+      isLoading: loading,
+      forceRender,
+      userId: user?.id,
+      profileId: profile?.id,
+      userEmail: user?.email,
+      sessionUserId: session?.user?.id,
+      decision: user && profile ? 'authenticated' : user ? 'partial-auth' : 'not-authenticated'
+    });
+  }
 
   // Check if user is authenticated (has session and user object)
   const isAuthenticated = !!user && !!session;
@@ -546,14 +550,16 @@ export function Header() {
   const [isMiniLocationOpen, setIsMiniLocationOpen] = useState(false);
   const pathname = usePathname();
 
-  // Debug log para Header
-  console.log('🏠 Header Debug:', {
-    component: 'Header',
-    pathname,
-    mobileMenuOpen,
-    isUserPanelOpen,
-    isMiniLocationOpen
-  });
+  // Debug log para Header (solo en desarrollo)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🏠 Header Debug:', {
+      component: 'Header',
+      pathname,
+      mobileMenuOpen,
+      isUserPanelOpen,
+      isMiniLocationOpen
+    });
+  }
   const { user, profile, tokenBalance, signOut, loading } = useAuth();
 
   const handleSignOut = async () => {

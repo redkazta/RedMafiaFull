@@ -130,7 +130,7 @@ export default function ProfilePage() {
       // Load real activity from user_activity_log
       const { data, error } = await supabase
         .from('user_activity_log')
-        .select('id, activity_type, description, created_at')
+        .select('id, description, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -139,7 +139,7 @@ export default function ProfilePage() {
         // Convertir los datos al formato esperado
         const formattedData = data.map((activity: any) => ({
           id: activity.id.toString(),
-          activity_type: activity.activity_type,
+          activity_type: 'activity', // Valor por defecto
           description: activity.description || 'Actividad sin descripción',
           created_at: activity.created_at || new Date().toISOString()
         }));
@@ -188,7 +188,6 @@ export default function ProfilePage() {
         .from('user_addresses')
         .select('*')
         .eq('user_id', user.id)
-        .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -248,7 +247,7 @@ export default function ProfilePage() {
     try {
       const { data, error } = await supabase
         .from('user_settings')
-        .select('setting_key, setting_value')
+        .select('*')
         .eq('user_id', user.id);
 
       if (!error && data) {
@@ -1007,7 +1006,7 @@ export default function ProfilePage() {
                               title="Eliminar dirección"
                             >
                               <FiTrash2 className="w-4 h-4" />
-                            </button>
+                          </button>
                           </div>
                         </div>
 
