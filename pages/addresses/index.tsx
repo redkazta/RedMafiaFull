@@ -5,19 +5,19 @@ import { supabase } from '../../lib/supabase';
 
 interface Address {
   id: number;
-  user_id: string;
-  codigo_postal: string;
+  user_id: string | null;
   street: string;
   city: string;
   state: string;
   postal_code: string;
+  is_default: boolean | null;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  codigo_postal: string;
   numero_exterior: string;
-  numero_interior?: string;
-  referencias?: string;
-  is_default: boolean;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  numero_interior?: string | null;
+  referencias?: string | null;
 }
 
 export default function AddressesPage() {
@@ -27,24 +27,19 @@ export default function AddressesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchAddresses();
-    }
-  }, [user, fetchAddresses]);
-
   const fetchAddresses = useCallback(async () => {
+    if (!user?.id) return;
+    
     try {
       const { data, error } = await supabase
         .from('user_addresses')
         .select('*')
-        .eq('user_id', user?.id)
-        .eq('is_active', true)
+        .eq('user_id', user.id)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAddresses(data || []);
+      setAddresses((data || []) as unknown as Address[]);
     } catch (error) {
       console.error('Error al cargar direcciones:', error);
     } finally {
@@ -52,12 +47,20 @@ export default function AddressesPage() {
     }
   }, [user?.id]);
 
+  useEffect(() => {
+    if (user) {
+      fetchAddresses();
+    }
+  }, [user, fetchAddresses]);
+
   const handleSubmit = async (formData: any) => {
+    if (!user?.id) return;
+    
     try {
       setLoading(true);
       
       const addressData = {
-        user_id: user?.id,
+        user_id: user.id,
         codigo_postal: formData.codigo_postal,
         street: formData.calle,
         city: formData.ciudad,
@@ -109,7 +112,7 @@ export default function AddressesPage() {
     try {
       const { error } = await supabase
         .from('user_addresses')
-        .update({ is_active: false })
+        .delete()
         .eq('id', id);
 
       if (error) throw error;
@@ -121,12 +124,14 @@ export default function AddressesPage() {
   };
 
   const handleSetDefault = async (id: number) => {
+    if (!user?.id) return;
+    
     try {
       // Quitar default de todas las direcciones
       await supabase
         .from('user_addresses')
         .update({ is_default: false })
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
       // Establecer como default la seleccionada
       const { error } = await supabase

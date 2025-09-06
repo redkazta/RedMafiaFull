@@ -4,14 +4,19 @@ import { supabase } from '../../lib/supabase';
 
 interface Address {
   id: number;
-  codigo_postal: string;
+  user_id: string | null;
   street: string;
   city: string;
   state: string;
+  postal_code: string;
+  is_default: boolean | null;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  codigo_postal: string;
   numero_exterior: string;
-  numero_interior?: string;
-  referencias?: string;
-  is_default: boolean;
+  numero_interior?: string | null;
+  referencias?: string | null;
 }
 
 interface AddressSelectorProps {
@@ -29,17 +34,18 @@ export const AddressSelector: React.FC<AddressSelectorProps> = ({
   const [showAddForm, setShowAddForm] = useState(false);
 
   const fetchAddresses = useCallback(async () => {
+    if (!user?.id) return;
+    
     try {
       const { data, error } = await supabase
         .from('user_addresses')
         .select('*')
-        .eq('user_id', user?.id)
-        .eq('is_active', true)
+        .eq('user_id', user.id)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAddresses(data || []);
+      setAddresses((data || []) as unknown as Address[]);
     } catch (error) {
       console.error('Error al cargar direcciones:', error);
     } finally {
