@@ -120,32 +120,32 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
   const [isHovered, setIsHovered] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Debug: Simplified logging (solo en desarrollo)
-  if (process.env.NODE_ENV === 'development' && loading) {
-    console.log('🔄 UserPanel loading state');
-  }
+  // Debug logging moved to useEffect to prevent render issues
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && loading) {
+      console.log('🔄 UserPanel loading state');
+    }
+  }, [loading]);
 
-  // Hover state management
-  const handleMouseEnter = () => {
+  // Simplified hover management to prevent React errors
+  const handleMouseEnter = useCallback(() => {
     if (hoverTimeout) clearTimeout(hoverTimeout);
     setIsOpen(true);
-    setIsHovered(true);
-  };
+  }, [hoverTimeout]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     const timeout = setTimeout(() => {
       setIsOpen(false);
-      setIsHovered(false);
-    }, 150); // Reduced for better UX
+    }, 150);
     setHoverTimeout(timeout);
-  };
+  }, []);
 
-  // Reset hover state when panel is closed
+  // Cleanup timeout on unmount
   useEffect(() => {
-    if (!isOpen) {
-      setIsHovered(false);
-    }
-  }, [isOpen]);
+    return () => {
+      if (hoverTimeout) clearTimeout(hoverTimeout);
+    };
+  }, [hoverTimeout]);
 
   // Remove problematic timeout that causes auth state issues
   useEffect(() => {
