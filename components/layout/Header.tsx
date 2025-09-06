@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -117,8 +117,6 @@ const navigation = [
 function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: boolean) => void }) {
   const { user, session, profile, tokenBalance, loading, signOut } = useAuth();
   const [forceRender, setForceRender] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Debug logging moved to useEffect to prevent render issues
   useEffect(() => {
@@ -127,25 +125,14 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
     }
   }, [loading]);
 
-  // Simplified hover management to prevent React errors
+  // Pure hover management without timeout
   const handleMouseEnter = useCallback(() => {
-    if (hoverTimeout) clearTimeout(hoverTimeout);
     setIsOpen(true);
-  }, [hoverTimeout]);
-
-  const handleMouseLeave = useCallback(() => {
-    const timeout = setTimeout(() => {
-      setIsOpen(false);
-    }, 150);
-    setHoverTimeout(timeout);
   }, []);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (hoverTimeout) clearTimeout(hoverTimeout);
-    };
-  }, [hoverTimeout]);
+  const handleMouseLeave = useCallback(() => {
+    setIsOpen(false);
+  }, []);
 
   // Remove problematic timeout that causes auth state issues
   useEffect(() => {
