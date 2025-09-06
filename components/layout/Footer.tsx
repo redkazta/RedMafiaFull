@@ -17,8 +17,8 @@ const footerLinks = {
     { name: 'Reportar Problema', href: '/report' },
   ],
   legal: [
-    { name: 'Términos de Uso', href: '/terms' },
-    { name: 'Política de Privacidad', href: '/privacy' },
+    { name: 'Términos de Uso', href: '/terminos' },
+    { name: 'Política de Privacidad', href: '/privacidad' },
     { name: 'Cookies', href: '/cookies' },
     { name: 'Derechos de Autor', href: '/copyright' },
   ],
