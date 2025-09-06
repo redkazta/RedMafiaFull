@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import dynamic from 'next/dynamic';
 import { AddressForm } from '../../components/forms/AddressForm';
 import { useAuth } from '../../contexts/AuthContext';
+import { AuthProvider } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
 interface Address {
@@ -21,7 +21,7 @@ interface Address {
   referencias?: string | null;
 }
 
-function AddressesPage() {
+function AddressesPageContent() {
   const { user } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
@@ -286,15 +286,11 @@ function AddressesPage() {
   );
 }
 
-// Export dinámico para evitar errores de build estático
-export default dynamic(() => Promise.resolve(AddressesPage), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Cargando direcciones...</p>
-      </div>
-    </div>
-  )
-});
+// Componente principal con AuthProvider
+export default function AddressesPage() {
+  return (
+    <AuthProvider>
+      <AddressesPageContent />
+    </AuthProvider>
+  );
+}
