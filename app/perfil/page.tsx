@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
+import { AddressForm } from '@/components/forms/AddressForm';
 import { FiEdit, FiSettings, FiShoppingBag, FiMapPin, FiArrowLeft, FiCalendar, FiMail, FiUser, FiGlobe, FiHeart, FiLogIn, FiPhone, FiSun, FiMoon, FiMonitor, FiBell, FiShield, FiSave, FiCheck, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useCart, WishlistItem } from '@/components/providers/CartProvider';
@@ -525,6 +526,69 @@ export default function ProfilePage() {
         hint: error.hint,
         fullError: error
       });
+      alert(`Error al guardar la dirección: ${error.message || 'Error desconocido'}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddressSubmit = async (data: any) => {
+    if (!user) return;
+
+    setSaving(true);
+    try {
+      console.log('🔄 Intentando guardar dirección mexicana:', {
+        userId: user.id,
+        data,
+        isEditing: !!editingLocation
+      });
+
+      const addressData = {
+        user_id: user.id,
+        street: data.calle,
+        city: data.ciudad,
+        state: data.estado,
+        postal_code: data.codigo_postal,
+        codigo_postal: data.codigo_postal,
+        numero_exterior: data.numero_exterior,
+        numero_interior: data.numero_interior || null,
+        referencias: data.referencias || null,
+        is_default: addresses.length === 0, // Primera dirección es por defecto
+        updated_at: new Date().toISOString()
+      };
+
+      if (editingLocation) {
+        // Update existing address
+        console.log('📝 Actualizando dirección existente:', editingLocation.id);
+        const { data: result, error } = await supabase
+          .from('user_addresses')
+          .update(addressData)
+          .eq('id', editingLocation.id)
+          .select();
+
+        console.log('📊 Resultado actualización:', { data: result, error });
+
+        if (error) throw error;
+        alert('Dirección actualizada correctamente');
+      } else {
+        // Create new address
+        console.log('➕ Creando nueva dirección mexicana');
+        const { data: result, error } = await supabase
+          .from('user_addresses')
+          .insert([addressData])
+          .select();
+
+        console.log('📊 Resultado inserción:', { data: result, error });
+
+        if (error) throw error;
+        alert('Dirección guardada correctamente');
+      }
+
+      // Refresh addresses
+      loadUserAddresses();
+      resetForm();
+    } catch (error: any) {
+      console.error('❌ Error al guardar dirección:', error);
       alert(`Error al guardar la dirección: ${error.message || 'Error desconocido'}`);
     } finally {
       setSaving(false);
@@ -1080,118 +1144,21 @@ export default function ProfilePage() {
                       </button>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      <div>
-                        <label className="text-white font-medium mb-2 block">
-                          Dirección completa *
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.street}
-                          onChange={(e) => handleInputChange('street', e.target.value)}
-                          placeholder="Calle, número, colonia, ciudad"
-                          className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          required
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-white font-medium mb-2 block">
-                            Ciudad *
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.city}
-                            onChange={(e) => handleInputChange('city', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-white font-medium mb-2 block">
-                            Estado *
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.state}
-                            onChange={(e) => handleInputChange('state', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-white font-medium mb-2 block">
-                            Código Postal *
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.postal_code}
-                            onChange={(e) => handleInputChange('postal_code', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-white font-medium mb-2 block">
-                            País *
-                          </label>
-                          <select
-                            value={formData.country}
-                            onChange={(e) => handleInputChange('country', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            required
-                          >
-                            <option value="México">México</option>
-                            <option value="Estados Unidos">Estados Unidos</option>
-                            <option value="Canadá">Canadá</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          id="is_default_address"
-                          checked={formData.is_default}
-                          onChange={(e) => handleInputChange('is_default', e.target.checked)}
-                          className="w-4 h-4 text-primary-500 bg-gray-700 border-gray-600 rounded focus:ring-primary-500"
-                        />
-                        <label htmlFor="is_default_address" className="text-white font-medium">
-                          Establecer como dirección por defecto
-                        </label>
-                      </div>
-
-                      <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-700">
-                        <button
-                          type="button"
-                          onClick={resetForm}
-                          className="px-6 py-3 text-gray-400 hover:text-white transition-colors"
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={saving}
-                          className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {saving ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                              <span>Guardando...</span>
-                            </>
-                          ) : (
-                            <>
-                              <FiCheck className="w-4 h-4" />
-                              <span>{editingLocation ? 'Actualizar' : 'Guardar'}</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </form>
+                    <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                      <AddressForm
+                        onSubmit={handleAddressSubmit}
+                        initialData={editingLocation ? {
+                          codigo_postal: editingLocation.postal_code,
+                          calle: editingLocation.street,
+                          ciudad: editingLocation.city,
+                          estado: editingLocation.state,
+                          numero_exterior: '',
+                          numero_interior: '',
+                          referencias: ''
+                        } : {}}
+                        loading={saving}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
