@@ -68,13 +68,13 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     const cartItem = {
-      id: product.id,
-      product_id: product.id, // Usar el mismo ID del producto
+      id: Date.now(), // ID único para el item del carrito
+      product_id: parseInt(product.id), // Convertir string UUID a number para carrito
       name: product.name,
-      price_tokens: product.price, // Usar price ya que es lo que está disponible en este archivo
+      price_tokens: product.price_tokens, // Usar price_tokens del producto
       quantity: 1,
       image: product.image_url || '',
-      category: product.category || 'Sin categoría',
+      category: product.product_categories?.name || 'Sin categoría',
     };
 
     addToCart(cartItem);
