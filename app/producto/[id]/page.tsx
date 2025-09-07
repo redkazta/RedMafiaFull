@@ -300,7 +300,22 @@ export default function ProductPage() {
 
       // Process product with attributes
       const data: Product = {
-        ...productData,
+        // Crear objeto Product manualmente sin spread para evitar errores de tipo
+        id: productData.id,
+        name: productData.name,
+        slug: productData.slug,
+        price: productData.price,
+        price_tokens: productData.price_tokens,
+        image_url: productData.image_url,
+        description: productData.description,
+        // Propiedades requeridas por el tipo Product
+        category_id: productData.category_id,
+        stock_quantity: productData.stock_quantity,
+        is_active: productData.is_active,
+        created_at: productData.created_at,
+        updated_at: productData.updated_at,
+        // Propiedades adicionales para compatibilidad
+        product_categories: null, // Agregar esta propiedad que se usa en el código
         // Agregar campos faltantes con valores por defecto
         main_image_url: productData.image_url, // Usar image_url como main_image_url
         image_urls: null, // No hay múltiples imágenes
