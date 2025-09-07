@@ -43,6 +43,9 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        if (!params || !params.slug) {
+          throw new Error('Slug de producto no válido');
+        }
         const response = await fetch(`/api/products/slug/${params.slug}`);
         if (!response.ok) {
           throw new Error('Producto no encontrado');
@@ -56,22 +59,22 @@ export default function ProductDetailPage() {
       }
     };
 
-    if (params.slug) {
+    if (params?.slug) {
       fetchProduct();
     }
-  }, [params.slug]);
+  }, [params]);
 
   const handleAddToCart = () => {
     if (!product) return;
 
     const cartItem = {
       id: product.id,
+      product_id: product.id, // Usar el mismo ID del producto
       name: product.name,
-      price: product.price,
-      image: product.image_url,
+      price_tokens: product.price, // Usar price ya que es lo que está disponible en este archivo
       quantity: 1,
-      selectedSize,
-      selectedColor,
+      image: product.image_url || '',
+      category: product.category || 'Sin categoría',
     };
 
     addToCart(cartItem);
@@ -293,9 +296,9 @@ export default function ProductDetailPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Producto no encontrado</h1>
           <p className="text-gray-600 mb-6">{error || 'El producto que buscas no existe'}</p>
-          <Button asChild>
-            <a href="/tienda">Volver a la tienda</a>
-          </Button>
+          <a href="/tienda">
+            <Button>Volver a la tienda</Button>
+          </a>
         </div>
       </div>
     );

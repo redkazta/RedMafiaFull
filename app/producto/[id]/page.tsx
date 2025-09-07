@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ProductActions } from '@/components/ui/ProductActions';
-import { FiArrowLeft, FiStar, FiTruck, FiShield, FiRotateCcw, FiMusic, FiHeadphones, FiShirt, FiGift, FiAward } from 'react-icons/fi';
+import { FiArrowLeft, FiStar, FiTruck, FiShield, FiRotateCcw, FiMusic, FiHeadphones, FiGift, FiAward } from 'react-icons/fi';
 import { supabase } from '@/lib/supabase';
 
 // Product interface matching actual Supabase data
@@ -30,7 +30,7 @@ interface Product {
   is_active: boolean | null;
   created_at: string | null;
   updated_at: string | null;
-  product_categories: { id: number; name: string; } | null;
+  product_categories?: { id: number; name: string; } | null;
   attributes?: ProductAttribute[];
   // Campos adicionales para compatibilidad - HACERLOS OBLIGATORIOS
   main_image_url: string | null;
@@ -281,18 +281,10 @@ export default function ProductPage() {
 
     setLoading(true);
     try {
-      // Get product data with attributes
+      // Get product data (attributes removed due to relation issues)
       const { data: productData, error: productError } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_categories(id, name),
-          product_attribute_values(
-            id,
-            value,
-            product_attributes(id, name, type)
-          )
-        `)
+        .select('*')
         .eq('id', productId)
         .eq('is_active', true)
         .single();
@@ -309,20 +301,30 @@ export default function ProductPage() {
 
       // Process product with attributes
       const data: Product = {
-        ...productData,
+        // Crear objeto Product manualmente sin spread para evitar errores de tipo
+        id: productData.id,
+        name: productData.name,
+        slug: productData.slug,
+        price: productData.price,
+        price_tokens: productData.price_tokens,
+        image_url: productData.image_url,
+        description: productData.description,
+        // Propiedades requeridas por el tipo Product
+        category_id: productData.category_id,
+        stock_quantity: productData.stock_quantity,
+        is_active: productData.is_active,
+        created_at: productData.created_at,
+        updated_at: productData.updated_at,
+        // Propiedades adicionales para compatibilidad
+        product_categories: null, // Agregar esta propiedad que se usa en el código
         // Agregar campos faltantes con valores por defecto
         main_image_url: productData.image_url, // Usar image_url como main_image_url
         image_urls: null, // No hay múltiples imágenes
         status: productData.is_active ? 'active' : 'inactive', // Mapear is_active a status
         is_featured: false, // Por defecto no es destacado
         original_price_mxn: null, // No hay precio original por defecto
-        // Procesar atributos
-        attributes: productData.product_attribute_values?.map(attr => ({
-          id: attr.id,
-          name: attr.product_attributes.name,
-          value: attr.value,
-          type: attr.product_attributes.type
-        })) || []
+        // Procesar atributos (temporalmente vacío hasta que se resuelva la relación)
+        attributes: []
       };
 
       setProduct(data);

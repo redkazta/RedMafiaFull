@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiPlay, FiMusic, FiUsers, FiCalendar } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 
@@ -110,9 +111,11 @@ export function HeroSection() {
             transition={{ duration: 1, delay: 0.2, type: "spring", stiffness: 100 }}
           >
             <div className="relative">
-              <img
+              <Image
                 src="/redmafialogo.png"
                 alt="LA RED MAFIA"
+                width={200}
+                height={200}
                 className="h-32 md:h-40 lg:h-52 w-auto object-contain"
                 style={{
                   filter: 'drop-shadow(0 0 60px rgba(239, 68, 68, 0.4)) drop-shadow(0 0 120px rgba(239, 68, 68, 0.2)) drop-shadow(0 0 180px rgba(239, 68, 68, 0.1))'
