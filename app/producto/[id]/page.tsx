@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ProductActions } from '@/components/ui/ProductActions';
-import { FiArrowLeft, FiStar, FiTruck, FiShield, FiRotateCcw, FiMusic, FiHeadphones, FiShirt, FiGift, FiAward } from 'react-icons/fi';
+import { FiArrowLeft, FiStar, FiTruck, FiShield, FiRotateCcw, FiMusic, FiHeadphones, FiGift, FiAward } from 'react-icons/fi';
 import { supabase } from '@/lib/supabase';
 
 // Product interface matching actual Supabase data
