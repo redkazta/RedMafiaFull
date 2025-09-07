@@ -154,7 +154,7 @@ export default function TiendaPage() {
                   setAnimatingProduct(product.id.toString());
 
               await addToCart({
-      product_id: parseInt(product.id), // Convertir string UUID a number para carrito
+      product_id: product.id, // ✅ Ahora usa string UUID directamente
       name: product.name,
           price_tokens: product.price_tokens,
           image: product.image_url || '',

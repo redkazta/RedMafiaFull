@@ -34,8 +34,8 @@ interface WishlistItemWithProduct {
 }
 
 export interface CartItem {
-  id: number; // ✅ Corregido: debe ser number según Supabase
-  product_id: number; // ✅ Corregido: debe ser number según Supabase
+  id: number; // ID único del item en el carrito (autoincremental)
+  product_id: string; // ✅ Corregido: debe ser string (UUID) según schema de BD
   name: string;
   price_tokens: number;
   quantity: number;
@@ -44,8 +44,8 @@ export interface CartItem {
 }
 
 export interface WishlistItem {
-  id: number; // ✅ Corregido: debe ser number según Supabase
-  product_id: number; // ✅ Corregido: debe ser number según Supabase
+  id: number; // ID autoincremental de la tabla wishlist
+  product_id: string; // ✅ Corregido: debe ser string (UUID) para coincidir con products.id
   name: string;
   price_tokens: number;
   image: string;
@@ -257,7 +257,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const { data, error } = await supabase
             .from('cart_items')
             .insert({
-              cart_id: parseInt(userCartId!),
+              cart_id: userCartId, // ✅ Ya es string UUID
               product_id: item.product_id,
               quantity: 1,
               price_tokens: item.price_tokens
@@ -369,7 +369,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const { error } = await supabase
           .from('cart_items')
           .delete()
-          .eq('cart_id', parseInt(userCartId!));
+          .eq('cart_id', userCartId) // ✅ Ya es string UUID;
 
         if (!error) {
           setCart([]);

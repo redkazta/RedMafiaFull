@@ -19,15 +19,18 @@ interface ProductAttribute {
 }
 
 interface Product {
-  id: number;
+  id: string; // Cambiado a string para consistencia con UUIDs
   name: string;
   slug: string;
   description: string;
   price: number;
+  price_tokens: number; // Agregado para consistencia
   image_url: string;
   category: string;
   stock: number;
   attributes: ProductAttribute[];
+  // Campos adicionales para compatibilidad
+  product_categories?: { id: string; name: string; } | null;
 }
 
 export default function ProductDetailPage() {
@@ -69,7 +72,7 @@ export default function ProductDetailPage() {
 
     const cartItem = {
       id: Date.now(), // ID único para el item del carrito
-      product_id: parseInt(product.id), // Convertir string UUID a number para carrito
+      product_id: product.id, // ✅ Ahora usa string UUID directamente
       name: product.name,
       price_tokens: product.price_tokens, // Usar price_tokens del producto
       quantity: 1,

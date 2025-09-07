@@ -41,7 +41,7 @@ export function ProductActions({
     setLoading(true);
     try {
       await addToCart({
-        product_id: Number(productId),
+        product_id: productId, // ✅ Ya es string, no necesita conversión
         name: productName,
         price_tokens: productPrice,
         image: productImage,
@@ -60,7 +60,7 @@ export function ProductActions({
       if (isInWishlistState) {
         // Remove from wishlist
         await addToWishlist({
-          product_id: Number(productId),
+          product_id: productId, // ✅ Ya es string, no necesita conversión
           name: productName,
           price_tokens: productPrice,
           image: productImage,
@@ -69,7 +69,7 @@ export function ProductActions({
       } else {
         // Add to wishlist
         await addToWishlist({
-          product_id: Number(productId),
+          product_id: productId, // ✅ Ya es string, no necesita conversión
           name: productName,
           price_tokens: productPrice,
           image: productImage,
@@ -215,7 +215,7 @@ export function QuickActions({
     setLoading(true);
     try {
       await addToCart({
-        product_id: Number(productId),
+        product_id: productId, // ✅ Ya es string, no necesita conversión
         name: productName,
         price_tokens: productPrice,
         image: productImage,
@@ -232,7 +232,7 @@ export function QuickActions({
     setLoading(true);
     try {
       await addToWishlist({
-        product_id: Number(productId),
+        product_id: productId, // ✅ Ya es string, no necesita conversión
         name: productName,
         price_tokens: productPrice,
         image: productImage,
