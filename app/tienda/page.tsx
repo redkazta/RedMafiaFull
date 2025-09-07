@@ -11,6 +11,13 @@ import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
+interface ProductAttribute {
+  id: number;
+  name: string;
+  value: string;
+  type: string;
+}
+
 interface Product {
   id: number;
   name: string;
@@ -24,6 +31,7 @@ interface Product {
   created_at: string | null;
   updated_at: string | null;
   product_categories: { id: number; name: string; } | null;
+  attributes?: ProductAttribute[];
   // Campos adicionales para compatibilidad - HACERLOS OBLIGATORIOS
   main_image_url: string | null;
   image_urls: string[] | null;
@@ -46,10 +54,18 @@ export default function TiendaPage() {
 
   const loadProducts = async () => {
     try {
-      // Get products data
+      // Get products data with attributes
       const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_categories(id, name),
+          product_attribute_values(
+            id,
+            value,
+            product_attributes(id, name, type)
+          )
+        `)
         .order('name');
 
       if (productsError) {
@@ -62,32 +78,22 @@ export default function TiendaPage() {
         return;
       }
 
-      // Get all unique category IDs
-      const categoryIds = Array.from(new Set(productsData.map(p => p.category_id).filter(id => id !== null)));
-
-      // Get category data for all products
-      let categoriesMap = new Map();
-      if (categoryIds.length > 0) {
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('product_categories')
-          .select('id, name')
-          .in('id', categoryIds);
-
-        if (!categoriesError && categoriesData) {
-          categoriesMap = new Map(categoriesData.map(cat => [cat.id, cat]));
-        }
-      }
-
-      // Combine products with their categories
+      // Process products with attributes
       const data: Product[] = productsData.map(product => ({
         ...product,
-        product_categories: product.category_id ? categoriesMap.get(product.category_id) || null : null,
         // Agregar campos faltantes con valores por defecto
         main_image_url: product.image_url, // Usar image_url como main_image_url
         image_urls: null, // No hay múltiples imágenes
         status: product.is_active ? 'active' : 'inactive', // Mapear is_active a status
         is_featured: false, // Por defecto no es destacado
-        original_price_mxn: null // No hay precio original por defecto
+        original_price_mxn: null, // No hay precio original por defecto
+        // Procesar atributos
+        attributes: product.product_attribute_values?.map(attr => ({
+          id: attr.id,
+          name: attr.product_attributes.name,
+          value: attr.value,
+          type: attr.product_attributes.type
+        })) || []
       }));
 
       setProducts(data);
@@ -279,6 +285,27 @@ export default function TiendaPage() {
                     <p className="text-gray-400 text-sm mb-3 line-clamp-2">
                       {product.description || 'Descripción no disponible'}
                     </p>
+
+                    {/* Product Attributes */}
+                    {product.attributes && product.attributes.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex flex-wrap gap-1">
+                          {product.attributes.slice(0, 3).map((attr) => (
+                            <span
+                              key={attr.id}
+                              className="inline-block bg-gray-700/50 text-gray-300 text-xs px-2 py-1 rounded-full border border-gray-600/50"
+                            >
+                              {attr.name}: {attr.value}
+                            </span>
+                          ))}
+                          {product.attributes.length > 3 && (
+                            <span className="inline-block bg-gray-700/50 text-gray-400 text-xs px-2 py-1 rounded-full border border-gray-600/50">
+                              +{product.attributes.length - 3} más
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                                          <div className="flex items-center justify-between">
                        <div className="text-primary-400 font-bold text-lg">
