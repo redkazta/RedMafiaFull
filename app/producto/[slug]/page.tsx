@@ -62,7 +62,7 @@ export default function ProductDetailPage() {
     if (params?.slug) {
       fetchProduct();
     }
-  }, [params.slug]);
+  }, [params?.slug]);
 
   const handleAddToCart = () => {
     if (!product) return;
