@@ -20,6 +20,7 @@ interface ProductAttribute {
 interface Product {
   id: number;
   name: string;
+  slug: string;
   price: number;
   price_tokens: number;
   image_url: string | null;
