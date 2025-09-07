@@ -29,7 +29,7 @@ interface Product {
   is_active: boolean | null;
   created_at: string | null;
   updated_at: string | null;
-  product_categories: { id: number; name: string; } | null;
+  product_categories?: { id: number; name: string; } | null;
   attributes?: ProductAttribute[];
   // Campos adicionales para compatibilidad - HACERLOS OBLIGATORIOS
   main_image_url: string | null;
@@ -285,7 +285,6 @@ export default function ProductPage() {
         .from('products')
         .select(`
           *,
-          product_categories(id, name),
           product_attribute_values(
             id,
             value,
