@@ -18,19 +18,19 @@ interface ProductAttribute {
 }
 
 interface Product {
-  id: number;
+  id: string; // Cambiado a string porque Supabase usa UUID
   name: string;
   slug: string;
   price: number;
   price_tokens: number;
   image_url: string | null;
   description: string | null;
-  category_id: number | null;
+  category_id: string | null; // Cambiado a string porque es UUID
   stock_quantity: number | null;
   is_active: boolean | null;
   created_at: string | null;
   updated_at: string | null;
-  product_categories?: { id: number; name: string; } | null;
+  product_categories?: { id: string; name: string; } | null; // Cambiado a string
   attributes?: ProductAttribute[];
   // Campos adicionales para compatibilidad - HACERLOS OBLIGATORIOS
   main_image_url: string | null;
