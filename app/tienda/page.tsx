@@ -87,15 +87,23 @@ export default function TiendaPage() {
 
       // Process products with attributes
       const data: Product[] = productsData.map(product => ({
-        ...product,
-        // Agregar campos faltantes con valores por defecto
-        main_image_url: product.image_url, // Usar image_url como main_image_url
-        image_urls: null, // No hay múltiples imágenes
-        status: product.is_active ? 'active' : 'inactive', // Mapear is_active a status
-        is_featured: false, // Por defecto no es destacado
-        original_price_mxn: null, // No hay precio original por defecto
-        // Procesar atributos (temporalmente vacío hasta que se resuelva la relación)
-        attributes: []
+        // Crear objeto Product manualmente sin spread para evitar errores de tipo
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        price_tokens: product.price_tokens,
+        image_url: product.image_url,
+        description: product.description,
+        category: 'General', // Categoría por defecto
+        stock: product.stock_quantity || 0,
+        attributes: [],
+        // Campos adicionales
+        main_image_url: product.image_url,
+        image_urls: null,
+        status: product.is_active ? 'active' : 'inactive',
+        is_featured: false,
+        original_price_mxn: null
       }));
 
       setProducts(data);
