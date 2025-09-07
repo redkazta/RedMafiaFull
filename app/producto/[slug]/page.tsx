@@ -62,19 +62,19 @@ export default function ProductDetailPage() {
     if (params?.slug) {
       fetchProduct();
     }
-  }, [params?.slug]);
+  }, [params]);
 
   const handleAddToCart = () => {
     if (!product) return;
 
     const cartItem = {
       id: product.id,
+      product_id: product.id, // Usar el mismo ID del producto
       name: product.name,
-      price: product.price,
-      image: product.image_url,
+      price_tokens: product.price_tokens || product.price, // Usar price_tokens o price como fallback
       quantity: 1,
-      selectedSize,
-      selectedColor,
+      image: product.image_url || '',
+      category: product.product_categories?.name || 'Sin categoría',
     };
 
     addToCart(cartItem);
