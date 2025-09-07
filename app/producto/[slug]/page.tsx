@@ -43,6 +43,9 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        if (!params || !params.slug) {
+          throw new Error('Slug de producto no válido');
+        }
         const response = await fetch(`/api/products/slug/${params.slug}`);
         if (!response.ok) {
           throw new Error('Producto no encontrado');
@@ -56,7 +59,7 @@ export default function ProductDetailPage() {
       }
     };
 
-    if (params.slug) {
+    if (params?.slug) {
       fetchProduct();
     }
   }, [params.slug]);
