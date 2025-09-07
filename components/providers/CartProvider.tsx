@@ -261,7 +261,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               product_id: item.product_id,
               quantity: 1,
               price_tokens: item.price_tokens
-            })
+            } as any) // Temporal: tipos de Supabase desactualizados
             .select('id')
             .single();
 
@@ -489,7 +489,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               product_id: item.product_id,
               quantity: item.quantity,
               price_tokens: item.price_tokens
-            });
+            } as any); // Temporal: tipos de Supabase desactualizados
         }
       }
 
