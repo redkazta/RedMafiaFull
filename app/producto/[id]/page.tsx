@@ -280,17 +280,10 @@ export default function ProductPage() {
 
     setLoading(true);
     try {
-      // Get product data with attributes
+      // Get product data (attributes removed due to relation issues)
       const { data: productData, error: productError } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_attribute_values(
-            id,
-            value,
-            product_attributes(id, name, type)
-          )
-        `)
+        .select('*')
         .eq('id', productId)
         .eq('is_active', true)
         .single();
@@ -314,13 +307,8 @@ export default function ProductPage() {
         status: productData.is_active ? 'active' : 'inactive', // Mapear is_active a status
         is_featured: false, // Por defecto no es destacado
         original_price_mxn: null, // No hay precio original por defecto
-        // Procesar atributos
-        attributes: productData.product_attribute_values?.map(attr => ({
-          id: attr.id,
-          name: attr.product_attributes.name,
-          value: attr.value,
-          type: attr.product_attributes.type
-        })) || []
+        // Procesar atributos (temporalmente vacío hasta que se resuelva la relación)
+        attributes: []
       };
 
       setProduct(data);
