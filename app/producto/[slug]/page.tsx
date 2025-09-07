@@ -296,9 +296,9 @@ export default function ProductDetailPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Producto no encontrado</h1>
           <p className="text-gray-600 mb-6">{error || 'El producto que buscas no existe'}</p>
-          <Button asChild>
-            <a href="/tienda">Volver a la tienda</a>
-          </Button>
+          <a href="/tienda">
+            <Button>Volver a la tienda</Button>
+          </a>
         </div>
       </div>
     );
