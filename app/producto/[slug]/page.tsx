@@ -71,10 +71,10 @@ export default function ProductDetailPage() {
       id: product.id,
       product_id: product.id, // Usar el mismo ID del producto
       name: product.name,
-      price_tokens: product.price_tokens || product.price, // Usar price_tokens o price como fallback
+      price_tokens: product.price, // Usar price ya que es lo que está disponible en este archivo
       quantity: 1,
       image: product.image_url || '',
-      category: product.product_categories?.name || 'Sin categoría',
+      category: product.category || 'Sin categoría',
     };
 
     addToCart(cartItem);
