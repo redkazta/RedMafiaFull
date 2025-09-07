@@ -56,7 +56,7 @@ export default function TiendaPage() {
 
   const loadProducts = async () => {
     try {
-      // Get products data with attributes
+      // Get products data (attributes removed due to relation issues)
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select(`
@@ -71,13 +71,7 @@ export default function TiendaPage() {
           stock_quantity,
           is_active,
           created_at,
-          updated_at,
-          product_categories(id, name),
-          product_attribute_values(
-            id,
-            value,
-            product_attributes(id, name, type)
-          )
+          updated_at
         `)
         .order('name');
 
@@ -100,13 +94,8 @@ export default function TiendaPage() {
         status: product.is_active ? 'active' : 'inactive', // Mapear is_active a status
         is_featured: false, // Por defecto no es destacado
         original_price_mxn: null, // No hay precio original por defecto
-        // Procesar atributos
-        attributes: product.product_attribute_values?.map(attr => ({
-          id: attr.id,
-          name: attr.product_attributes.name,
-          value: attr.value,
-          type: attr.product_attributes.type
-        })) || []
+        // Procesar atributos (temporalmente vacío hasta que se resuelva la relación)
+        attributes: []
       }));
 
       setProducts(data);
