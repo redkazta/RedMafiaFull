@@ -62,7 +62,6 @@ export default function TiendaPage() {
         .select(`
           id,
           name,
-          slug,
           price,
           price_tokens,
           image_url,
@@ -88,15 +87,15 @@ export default function TiendaPage() {
       // Process products with attributes
       const data: Product[] = productsData.map(product => ({
         // Crear objeto Product manualmente sin spread para evitar errores de tipo
-        id: product.id,
+        id: String(product.id), // Convertir a string para compatibilidad con UUID
         name: product.name,
-        slug: product.slug,
+        slug: product.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'), // Generar slug desde el nombre
         price: product.price,
         price_tokens: product.price_tokens,
         image_url: product.image_url,
         description: product.description,
         // Propiedades requeridas por el tipo Product
-        category_id: product.category_id,
+        category_id: product.category_id ? String(product.category_id) : null, // Convertir a string
         stock_quantity: product.stock_quantity,
         is_active: product.is_active,
         created_at: product.created_at,
