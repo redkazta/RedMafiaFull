@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -17,54 +17,57 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const client = await pool.connect();
+    // Buscar producto por slug
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select(`
+        *,
+        product_categories(id, name)
+      `)
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single();
 
-    // Buscar producto por slug con sus atributos
-    const productQuery = `
-      SELECT 
-        p.id,
-        p.name,
-        p.slug,
-        p.description,
-        p.price,
-        p.image_url,
-        p.category,
-        p.stock,
-        p.created_at,
-        p.updated_at
-      FROM products p
-      WHERE p.slug = $1
-    `;
-
-    const productResult = await client.query(productQuery, [slug]);
-
-    if (productResult.rows.length === 0) {
-      client.release();
+    if (productError || !product) {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 
-    const product = productResult.rows[0];
+    // Buscar atributos del producto (si existe la tabla)
+    let attributes = [];
+    try {
+      const { data: attributesData, error: attributesError } = await supabase
+        .from('product_attribute_values')
+        .select(`
+          value,
+          product_attributes(name, type)
+        `)
+        .eq('product_id', product.id);
 
-    // Buscar atributos del producto
-    const attributesQuery = `
-      SELECT 
-        pa.id,
-        pa.name,
-        pa.value,
-        pa.type,
-        pa.created_at
-      FROM product_attributes pa
-      WHERE pa.product_id = $1
-      ORDER BY pa.name, pa.created_at
-    `;
-
-    const attributesResult = await client.query(attributesQuery, [product.id]);
-
-    client.release();
+      if (!attributesError && attributesData) {
+        attributes = attributesData.map(attr => ({
+          id: Math.random(), // ID temporal
+          name: attr.product_attributes?.name || 'Atributo',
+          value: attr.value,
+          type: attr.product_attributes?.type || 'text'
+        }));
+      }
+    } catch (attrError) {
+      // Si no existe la tabla de atributos, continuar sin error
+      console.log('Atributos no disponibles:', attrError);
+    }
 
     const productWithAttributes = {
       ...product,
-      attributes: attributesResult.rows
+      attributes: attributes,
+      // Campos adicionales para compatibilidad
+      price_tokens: product.price_tokens || 0,
+      stock: product.stock_quantity || 0,
+      category: product.product_categories?.name || 'Sin categoría',
+      main_image_url: product.main_image_url || product.image_url,
+      image_urls: product.image_urls || [],
+      status: product.status || 'active',
+      is_featured: product.is_featured || false,
+      original_price_mxn: product.original_price_mxn || null
     };
 
     res.status(200).json(productWithAttributes);

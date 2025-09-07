@@ -302,15 +302,15 @@ export default function ProductPage() {
       // Process product with attributes
       const data: Product = {
         // Crear objeto Product manualmente sin spread para evitar errores de tipo
-        id: productData.id,
+        id: String(productData.id), // Convertir a string para compatibilidad con UUID
         name: productData.name,
-        slug: productData.slug,
-        price: productData.price,
+        slug: productData.slug || productData.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'), // Fallback si no hay slug
+        price: productData.price || 0,
         price_tokens: productData.price_tokens,
         image_url: productData.image_url,
         description: productData.description,
         // Propiedades requeridas por el tipo Product
-        category_id: productData.category_id,
+        category_id: productData.category_id ? String(productData.category_id) : null, // Convertir a string
         stock_quantity: productData.stock_quantity,
         is_active: productData.is_active,
         created_at: productData.created_at,
