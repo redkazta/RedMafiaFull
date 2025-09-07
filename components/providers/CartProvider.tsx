@@ -142,7 +142,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             .filter((item: CartItemWithProduct) => item.product_id !== null)
             .map((item: CartItemWithProduct) => ({
               id: item.id,
-              product_id: item.product_id!,
+              product_id: String(item.product_id!), // Convertir number a string UUID
               name: item.products?.name || '',
               price_tokens: item.price_tokens,
               quantity: item.quantity,
@@ -172,7 +172,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (!wishlistError && wishlistItems) {
         const formattedWishlist = wishlistItems.map((item: WishlistItemWithProduct) => ({
           id: item.id,
-          product_id: item.product_id,
+          product_id: String(item.product_id), // Convertir number a string UUID
           name: item.products?.name || '',
           price_tokens: item.products?.price_tokens || 0,
           image: item.products?.image_url || '',
