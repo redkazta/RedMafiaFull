@@ -6,10 +6,17 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ProductActions } from '@/components/ui/ProductActions';
-import { FiArrowLeft, FiStar, FiTruck, FiShield, FiRotateCcw } from 'react-icons/fi';
+import { FiArrowLeft, FiStar, FiTruck, FiShield, FiRotateCcw, FiMusic, FiHeadphones, FiShirt, FiGift, FiAward } from 'react-icons/fi';
 import { supabase } from '@/lib/supabase';
 
 // Product interface matching actual Supabase data
+interface ProductAttribute {
+  id: number;
+  name: string;
+  value: string;
+  type: string;
+}
+
 interface Product {
   id: number;
   name: string;
@@ -23,6 +30,7 @@ interface Product {
   created_at: string | null;
   updated_at: string | null;
   product_categories: { id: number; name: string; } | null;
+  attributes?: ProductAttribute[];
   // Campos adicionales para compatibilidad - HACERLOS OBLIGATORIOS
   main_image_url: string | null;
   image_urls: string[] | null;
@@ -30,6 +38,230 @@ interface Product {
   is_featured: boolean | null;
   original_price_mxn: number | null;
 }
+
+// Función para determinar el tipo de producto
+const getProductType = (product: Product): string => {
+  const name = product.name.toLowerCase();
+  
+  if (name.includes('maqueta') || name.includes('remix') || name.includes('demo') || name.includes('track') || name.includes('drumkit') || name.includes('clase')) {
+    return 'music';
+  } else if (name.includes('hoodie') || name.includes('camiseta') || name.includes('gorra')) {
+    return 'clothing';
+  } else if (name.includes('cadena') || name.includes('anillo') || name.includes('collar')) {
+    return 'accessories';
+  } else if (name.includes('sticker') || name.includes('poster')) {
+    return 'merchandise';
+  } else if (name.includes('edición limitada') || name.includes('limitada')) {
+    return 'limited';
+  }
+  
+  return 'default';
+};
+
+// Componente para productos de música
+const MusicProductDetails = ({ product }: { product: Product }) => {
+  const duration = product.attributes?.find(attr => attr.name === 'Duración')?.value;
+  const artist = product.attributes?.find(attr => attr.name === 'Artista')?.value;
+  const format = product.attributes?.find(attr => attr.name === 'Formato')?.value;
+  const quality = product.attributes?.find(attr => attr.name === 'Calidad')?.value;
+
+  return (
+    <div className="space-y-6">
+      {/* Audio Player */}
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="w-16 h-16 bg-primary-500/20 rounded-full flex items-center justify-center">
+            <FiMusic className="w-8 h-8 text-primary-400" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Vista Previa</h3>
+            <p className="text-gray-400">Escucha una muestra del track</p>
+          </div>
+        </div>
+        <div className="bg-gray-900/50 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-400">00:00</span>
+            <span className="text-sm text-gray-400">{duration || 'N/A'}</span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+            <div className="bg-primary-500 h-2 rounded-full w-0"></div>
+          </div>
+          <div className="flex items-center justify-center">
+            <button className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white hover:bg-primary-600 transition-colors">
+              <FiHeadphones className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Music Details */}
+      <div className="grid grid-cols-2 gap-4">
+        {artist && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Artista</h4>
+            <p className="text-white font-semibold">{artist}</p>
+          </div>
+        )}
+        {duration && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Duración</h4>
+            <p className="text-white font-semibold">{duration}</p>
+          </div>
+        )}
+        {format && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Formato</h4>
+            <p className="text-white font-semibold">{format}</p>
+          </div>
+        )}
+        {quality && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Calidad</h4>
+            <p className="text-white font-semibold">{quality}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Componente para productos de ropa
+const ClothingProductDetails = ({ product }: { product: Product }) => {
+  const size = product.attributes?.find(attr => attr.name === 'Talla')?.value;
+  const color = product.attributes?.find(attr => attr.name === 'Color')?.value;
+  const material = product.attributes?.find(attr => attr.name === 'Material')?.value;
+
+  return (
+    <div className="space-y-6">
+      {/* Size Selector */}
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+        <h3 className="text-lg font-bold text-white mb-4">Selecciona tu talla</h3>
+        <div className="grid grid-cols-5 gap-2">
+          {['S', 'M', 'L', 'XL', 'XXL'].map((talla) => (
+            <button
+              key={talla}
+              className={`p-3 rounded-lg border transition-colors ${
+                size === talla
+                  ? 'border-primary-500 bg-primary-500/20 text-primary-400'
+                  : 'border-gray-600 text-gray-300 hover:border-gray-500'
+              }`}
+            >
+              {talla}
+            </button>
+          ))}
+        </div>
+        <p className="text-sm text-gray-400 mt-2">Talla seleccionada: {size || 'N/A'}</p>
+      </div>
+
+      {/* Clothing Details */}
+      <div className="grid grid-cols-1 gap-4">
+        {color && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Color</h4>
+            <div className="flex items-center space-x-2">
+              <div className={`w-6 h-6 rounded-full border-2 border-gray-600 ${
+                color.toLowerCase() === 'negro' ? 'bg-black' :
+                color.toLowerCase() === 'blanco' ? 'bg-white' :
+                color.toLowerCase() === 'gris' ? 'bg-gray-500' :
+                'bg-blue-500'
+              }`}></div>
+              <p className="text-white font-semibold">{color}</p>
+            </div>
+          </div>
+        )}
+        {material && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Material</h4>
+            <p className="text-white font-semibold">{material}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Componente para accesorios
+const AccessoriesProductDetails = ({ product }: { product: Product }) => {
+  const size = product.attributes?.find(attr => attr.name === 'Talla')?.value;
+  const material = product.attributes?.find(attr => attr.name === 'Material')?.value;
+  const length = product.attributes?.find(attr => attr.name === 'Longitud')?.value;
+  const finish = product.attributes?.find(attr => attr.name === 'Acabado')?.value;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4">
+        {size && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Talla</h4>
+            <p className="text-white font-semibold">{size}</p>
+          </div>
+        )}
+        {material && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Material</h4>
+            <p className="text-white font-semibold">{material}</p>
+          </div>
+        )}
+        {length && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Longitud</h4>
+            <p className="text-white font-semibold">{length}</p>
+          </div>
+        )}
+        {finish && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-400 mb-1">Acabado</h4>
+            <p className="text-white font-semibold">{finish}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Componente para ediciones limitadas
+const LimitedEditionDetails = ({ product }: { product: Product }) => {
+  const editionNumber = product.attributes?.find(attr => attr.name === 'Número de edición')?.value;
+  const limitedQuantity = product.attributes?.find(attr => attr.name === 'Cantidad limitada')?.value;
+  const productType = product.attributes?.find(attr => attr.name === 'Tipo de producto')?.value;
+  const specialFeatures = product.attributes?.find(attr => attr.name === 'Características especiales')?.value;
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-sm rounded-xl p-6 border border-yellow-500/30">
+        <div className="flex items-center space-x-3 mb-4">
+          <FiAward className="w-8 h-8 text-yellow-400" />
+          <div>
+            <h3 className="text-xl font-bold text-white">Edición Limitada</h3>
+            <p className="text-yellow-300">Producto exclusivo y numerado</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          {editionNumber && (
+            <div className="bg-black/30 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-yellow-400 mb-1">Número de Edición</h4>
+              <p className="text-white font-bold text-2xl">{editionNumber}</p>
+            </div>
+          )}
+          {limitedQuantity && (
+            <div className="bg-black/30 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-yellow-400 mb-1">Cantidad Limitada</h4>
+              <p className="text-white font-bold text-2xl">{limitedQuantity}</p>
+            </div>
+          )}
+        </div>
+        
+        {specialFeatures && (
+          <div className="mt-4 bg-black/30 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-yellow-400 mb-2">Características Especiales</h4>
+            <p className="text-white">{specialFeatures}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default function ProductPage() {
   const params = useParams();
@@ -48,10 +280,18 @@ export default function ProductPage() {
 
     setLoading(true);
     try {
-      // Get product data
+      // Get product data with attributes
       const { data: productData, error: productError } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_categories(id, name),
+          product_attribute_values(
+            id,
+            value,
+            product_attributes(id, name, type)
+          )
+        `)
         .eq('id', productId)
         .eq('is_active', true)
         .single();
@@ -66,30 +306,22 @@ export default function ProductPage() {
         return;
       }
 
-      // Get category data separately if category_id exists
-      let categoryData = null;
-      if (productData.category_id) {
-        const { data: catData, error: catError } = await supabase
-          .from('product_categories')
-          .select('id, name')
-          .eq('id', productData.category_id)
-          .single();
-
-        if (!catError && catData) {
-          categoryData = catData;
-        }
-      }
-
-      // Combine data
+      // Process product with attributes
       const data: Product = {
         ...productData,
-        product_categories: categoryData,
         // Agregar campos faltantes con valores por defecto
         main_image_url: productData.image_url, // Usar image_url como main_image_url
         image_urls: null, // No hay múltiples imágenes
         status: productData.is_active ? 'active' : 'inactive', // Mapear is_active a status
         is_featured: false, // Por defecto no es destacado
-        original_price_mxn: null // No hay precio original por defecto
+        original_price_mxn: null, // No hay precio original por defecto
+        // Procesar atributos
+        attributes: productData.product_attribute_values?.map(attr => ({
+          id: attr.id,
+          name: attr.product_attributes.name,
+          value: attr.value,
+          type: attr.product_attributes.type
+        })) || []
       };
 
       setProduct(data);
@@ -262,6 +494,37 @@ export default function ProductPage() {
                 stockQuantity={product.stock_quantity ?? undefined}
                 className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
               />
+
+              {/* Product Type Specific Details */}
+              {(() => {
+                const productType = getProductType(product);
+                switch (productType) {
+                  case 'music':
+                    return <MusicProductDetails product={product} />;
+                  case 'clothing':
+                    return <ClothingProductDetails product={product} />;
+                  case 'accessories':
+                    return <AccessoriesProductDetails product={product} />;
+                  case 'limited':
+                    return <LimitedEditionDetails product={product} />;
+                  default:
+                    return (
+                      <div className="bg-gray-800/30 rounded-lg p-6">
+                        <h3 className="text-lg font-bold text-white mb-4">Detalles del Producto</h3>
+                        {product.attributes && product.attributes.length > 0 && (
+                          <div className="grid grid-cols-1 gap-3">
+                            {product.attributes.map((attr) => (
+                              <div key={attr.id} className="flex justify-between">
+                                <span className="text-gray-400">{attr.name}:</span>
+                                <span className="text-white font-medium">{attr.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                }
+              })()}
 
               {/* Features */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-6 border-t border-gray-700">
