@@ -36,7 +36,7 @@ REM Refrescar PATH
 call refrescar_path.bat
 
 REM Instalar dependencias
-npm install
+npm install --legacy-peer-deps
 
 if %errorlevel% equ 0 (
     echo.
@@ -60,7 +60,7 @@ pause >nul
 :instalar_dependencias
 echo.
 echo Instalando dependencias del proyecto...
-npm install
+npm install --legacy-peer-deps
 
 if %errorlevel% equ 0 (
     echo.
