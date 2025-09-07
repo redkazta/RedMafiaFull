@@ -57,14 +57,14 @@ interface CartContextType {
   wishlist: WishlistItem[];
   loading: boolean;
   addToCart: (item: Omit<CartItem, 'id' | 'quantity'>) => Promise<void>;
-  removeFromCart: (productId: number) => Promise<void>; // ✅ Corregido
-  updateQuantity: (productId: number, quantity: number) => Promise<void>; // ✅ Corregido
+  removeFromCart: (productId: string) => Promise<void>; // ✅ Ahora usa string UUID
+  updateQuantity: (productId: string, quantity: number) => Promise<void>; // ✅ Ahora usa string UUID
   clearCart: () => Promise<void>;
   getCartTotal: () => number;
   getCartItemsCount: () => number;
   addToWishlist: (item: Omit<WishlistItem, 'id'>) => Promise<void>;
-  removeFromWishlist: (productId: number) => Promise<void>; // ✅ Corregido
-  isInWishlist: (productId: number) => boolean; // ✅ Corregido
+  removeFromWishlist: (productId: string) => Promise<void>; // ✅ Ahora usa string UUID
+  isInWishlist: (productId: string) => boolean; // ✅ Ahora usa string UUID
   migrateLocalStorageToDatabase: () => Promise<void>;
 }
 
@@ -301,7 +301,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const removeFromCart = async (productId: number) => {
+  const removeFromCart = async (productId: string) => {
     if (user && userCartId) {
       // Remove from database
       try {
@@ -325,7 +325,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateQuantity = async (productId: number, quantity: number) => {
+  const updateQuantity = async (productId: string, quantity: number) => {
     if (quantity <= 0) {
       await removeFromCart(productId);
       return;
@@ -440,7 +440,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const removeFromWishlist = async (productId: number) => {
+  const removeFromWishlist = async (productId: string) => {
     if (user) {
       // Remove from database
       try {
@@ -466,7 +466,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isInWishlist = (productId: number) => {
+  const isInWishlist = (productId: string) => {
     return wishlist.some(item => item.product_id === productId);
   };
 

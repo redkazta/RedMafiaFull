@@ -30,7 +30,7 @@ export function ProductActions({
   const { addToCart, addToWishlist, isInWishlist } = useCart();
   const { user } = useAuth();
 
-  const isInWishlistState = isInWishlist(Number(productId));
+  const isInWishlistState = isInWishlist(productId); // ✅ Ya es string, no necesita conversión
 
   const handleAddToCart = async () => {
     if (quantity > stockQuantity) {
@@ -209,7 +209,7 @@ export function QuickActions({
   const [loading, setLoading] = useState(false);
   const { addToCart, addToWishlist, isInWishlist } = useCart();
 
-  const isInWishlistState = isInWishlist(Number(productId));
+  const isInWishlistState = isInWishlist(productId); // ✅ Ya es string, no necesita conversión
 
   const handleQuickAddToCart = async () => {
     setLoading(true);
