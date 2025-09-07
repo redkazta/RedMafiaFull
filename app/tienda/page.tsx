@@ -95,6 +95,13 @@ export default function TiendaPage() {
         price_tokens: product.price_tokens,
         image_url: product.image_url,
         description: product.description,
+        // Propiedades requeridas por el tipo Product
+        category_id: product.category_id,
+        stock_quantity: product.stock_quantity,
+        is_active: product.is_active,
+        created_at: product.created_at,
+        updated_at: product.updated_at,
+        // Propiedades adicionales para la interfaz local
         category: 'General', // Categoría por defecto
         stock: product.stock_quantity || 0,
         attributes: [],
@@ -103,7 +110,8 @@ export default function TiendaPage() {
         image_urls: null,
         status: product.is_active ? 'active' : 'inactive',
         is_featured: false,
-        original_price_mxn: null
+        original_price_mxn: null,
+        product_categories: null // Agregar esta propiedad que también se usa
       }));
 
       setProducts(data);
