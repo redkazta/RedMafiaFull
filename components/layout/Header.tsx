@@ -128,11 +128,11 @@ function UserPanel({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: b
   // Pure hover management without timeout
   const handleMouseEnter = useCallback(() => {
     setIsOpen(true);
-  }, []);
+  }, [setIsOpen]);
 
   const handleMouseLeave = useCallback(() => {
     setIsOpen(false);
-  }, []);
+  }, [setIsOpen]);
 
   // Remove problematic timeout that causes auth state issues
   useEffect(() => {
