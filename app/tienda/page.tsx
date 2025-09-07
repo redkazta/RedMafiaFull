@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -21,6 +22,7 @@ interface ProductAttribute {
 interface Product {
   id: number;
   name: string;
+  slug: string;
   price: number;
   price_tokens: number;
   image_url: string | null;
@@ -58,7 +60,18 @@ export default function TiendaPage() {
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select(`
-          *,
+          id,
+          name,
+          slug,
+          price,
+          price_tokens,
+          image_url,
+          description,
+          category_id,
+          stock_quantity,
+          is_active,
+          created_at,
+          updated_at,
           product_categories(id, name),
           product_attribute_values(
             id,
@@ -234,17 +247,18 @@ export default function TiendaPage() {
                   transition={{ duration: 0.2 }}
                   >
                     {/* Product Image */}
-                    <div className="relative aspect-square bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center overflow-hidden">
-                      <Image
-                        src={product.image_url || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        onError={(e) => {
-                         e.currentTarget.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
-                       }}
-                     />
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-500/10 group-hover:from-primary-500/20 group-hover:to-accent-500/20 transition-all duration-300"></div>
+                    <Link href={`/producto/${product.slug}`} className="block">
+                      <div className="relative aspect-square bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center overflow-hidden cursor-pointer">
+                        <Image
+                          src={product.image_url || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => {
+                           e.currentTarget.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
+                         }}
+                       />
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-500/10 group-hover:from-primary-500/20 group-hover:to-accent-500/20 transition-all duration-300"></div>
                       
                       {/* Quick Actions */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -277,7 +291,8 @@ export default function TiendaPage() {
                         </motion.button>
                         </div>
                       </div>
-                    </div>
+                      </div>
+                    </Link>
                     
                     {/* Product Info */}
                   <div className="p-4">
