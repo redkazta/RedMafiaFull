@@ -135,7 +135,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               product_categories (name)
             )
           `)
-          .eq('cart_id', cartData.id) as { data: CartItemWithProduct[] | null; error: any };
+          .eq('cart_id', String(cartData.id)) as { data: CartItemWithProduct[] | null; error: any };
 
         if (!cartItemsError && cartItems) {
           const formattedCart = cartItems
@@ -369,7 +369,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const { error } = await supabase
           .from('cart_items')
           .delete()
-          .eq('cart_id', userCartId) // ✅ Ya es string UUID;
+          .eq('cart_id', userCartId as any) // ✅ Ya es string UUID;
 
         if (!error) {
           setCart([]);
